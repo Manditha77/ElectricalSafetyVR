@@ -98,7 +98,7 @@ public static class WorkshopBuilder
 
         Box(g, "Shelf_BoxLow",  V(3.72f, 0.365f, -2.55f), V(0.3f, 0.3f, 0.3f),   Cardboard);
         Box(g, "Shelf_BoxMid",  V(3.72f, 0.84f, -2.2f),   V(0.3f, 0.25f, 0.4f),  Cardboard);
-        Box(g, "Shelf_Toolbox", V(3.72f, 1.29f, -2.5f),   V(0.25f, 0.15f, 0.4f), Red);
+        Box(g, "Shelf_Toolbox", V(3.72f, 1.29f, -2.573f),   V(0.25f, 0.15f, 0.3f), Red);
 
         // Safe isolation poster on the west wall, between the workstation and the PPE area
         Box(g, "Poster_Board",  V(-3.92f, 1.5f, 0.6f),   V(0.01f, 0.8f, 0.6f),   Poster);
