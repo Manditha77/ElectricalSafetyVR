@@ -160,6 +160,9 @@ public class ElectricalSafetyManager : MonoBehaviour
 
         CheckPpeOnce();
 
+        // Stop processing if the session has ended.
+        if (!Running) return;
+
         if (string.IsNullOrWhiteSpace(hazardName))
             return;
 
@@ -179,16 +182,25 @@ public class ElectricalSafetyManager : MonoBehaviour
         identifiedHazards.Add(hazardName);
         HazardsFound = identifiedHazards.Count;
 
-        Info(
-            "Hazard reported: " +
-            hazardName + " (" +
-            HazardsFound + " of " +
-            requiredHazards + ")"
-        );
-
-        if (HazardsFound >= requiredHazards)
+        // Scenario 3: Incomplete hazard inspection.
+        if (HazardsFound < requiredHazards)
         {
-            Info("All required hazards identified! Proceed to electrical isolation.");
+            Info(
+                "[GUIDANCE] Hazard reported: " +
+                hazardName + " (" +
+                HazardsFound + " of " +
+                requiredHazards + "). " +
+                "Hazard inspection incomplete. Identify all " +
+                requiredHazards + " hazards."
+            );
+        }
+        // Scenario 4: All hazards identified.
+        else
+        {
+            Info(
+                "All " + requiredHazards +
+                " hazards identified! Proceed to electrical isolation."
+            );
         }
     }
 
@@ -200,10 +212,27 @@ public class ElectricalSafetyManager : MonoBehaviour
 
         CheckPpeOnce();
 
+        if (!Running) return false;
+
         if (LockoutApplied)
         {
             Info("[GUIDANCE] The breaker is locked. Remove the tag first.");
             return false;
+        }
+
+        // NEW: Hazard inspection must be completed first.
+        if (HazardsFound < requiredHazards)
+        {
+            Unsafe(
+                "Hazards",
+                "Warning! Complete the hazard inspection before proceeding. " +
+                "You have identified " + HazardsFound +
+                " of " + requiredHazards + " hazards.",
+                false
+            );
+
+            // If this was the third unsafe action, stop.
+            if (!Running) return false;
         }
 
         Score("Isolate", true);
@@ -270,6 +299,8 @@ public class ElectricalSafetyManager : MonoBehaviour
 
         CheckPpeOnce();
 
+        if (!Running) return;
+
         Unsafe(
             "Isolate",
             "Wrong breaker! Check the job card for the correct electrical supply.",
@@ -317,6 +348,8 @@ public class ElectricalSafetyManager : MonoBehaviour
 
         CheckPpeOnce();
 
+        if (!Running) return false;
+
         if (State == ElectricalState.Energised)
         {
             Info("[GUIDANCE] Tester reads LIVE. Isolate the supply first.");
@@ -355,6 +388,8 @@ public class ElectricalSafetyManager : MonoBehaviour
 
         CheckPpeOnce();
 
+        if (!Running) return false;
+
         if (State == ElectricalState.Energised)
         {
             liveAttempts++;
@@ -383,6 +418,8 @@ public class ElectricalSafetyManager : MonoBehaviour
                     "You went to open the cover without a lockout tag on the breaker.",
                     false
                 );
+
+                if (!Running) return false;
             }
         }
 
@@ -484,7 +521,8 @@ public class ElectricalSafetyManager : MonoBehaviour
         {
             Unsafe(
                 "PPE",
-                "Warning! You started work with incomplete PPE. All 6 required items must be worn.",
+                "Warning! You started work with incomplete PPE. All " +
+                requiredPpeItems + " required items must be worn.",
                 false
             );
         }
