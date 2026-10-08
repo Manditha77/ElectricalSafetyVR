@@ -1,8 +1,10 @@
+
 using UnityEngine;
 
 public class SafetyDebug : MonoBehaviour
 {
-    ElectricalSafetyManager M => ElectricalSafetyManager.Instance;
+    ElectricalSafetyManager M =>
+        ElectricalSafetyManager.Instance;
 
     void OnEnable()
     {
@@ -29,18 +31,75 @@ public class SafetyDebug : MonoBehaviour
             Debug.Log(text);
     }
 
-    [ContextMenu("01 Wear both PPE items")]
-    void WearPpe()
+    // ---------- PPE TESTS ----------
+
+    [ContextMenu("PPE 01 - Wear one item")]
+    void WearOnePpe()
     {
-        M.PpeItemWorn(true);
-        M.PpeItemWorn(true);
+        M.PpeItemWorn("Insulated Gloves", true);
     }
 
-    [ContextMenu("02 Report a hazard")]
-    void ReportHazard()
+    [ContextMenu("PPE 02 - Wear remaining five")]
+    void WearRemainingPpe()
     {
-        M.HazardIdentified("Test hazard");
+        M.PpeItemWorn("Safety Glasses", true);
+        M.PpeItemWorn("Required PPE 3", true);
+        M.PpeItemWorn("Required PPE 4", true);
+        M.PpeItemWorn("Required PPE 5", true);
+        M.PpeItemWorn("Required PPE 6", true);
     }
+
+    [ContextMenu("PPE 03 - Wear incorrect PPE")]
+    void WearIncorrectPpe()
+    {
+        M.PpeItemWorn("Incorrect PPE", false);
+    }
+
+    [ContextMenu("PPE 04 - Remove gloves")]
+    void RemovePpe()
+    {
+        M.PpeItemRemoved("Insulated Gloves");
+    }
+
+    [ContextMenu("PPE 05 - Start work without PPE")]
+    void StartWithoutPpe()
+    {
+        M.HazardIdentified("Test Hazard 1");
+    }
+
+    // ---------- HAZARD TESTS ----------
+
+    [ContextMenu("02 Report hazard 1")]
+    void ReportHazard1()
+    {
+        M.HazardIdentified("Water on Floor");
+    }
+
+    [ContextMenu("02A Report hazard 2")]
+    void ReportHazard2()
+    {
+        M.HazardIdentified("Damaged Cable");
+    }
+
+    [ContextMenu("02B Report hazard 3")]
+    void ReportHazard3()
+    {
+        M.HazardIdentified("Overloaded Socket");
+    }
+
+    [ContextMenu("02C Report hazard 4")]
+    void ReportHazard4()
+    {
+        M.HazardIdentified("Metal Tool Hazard");
+    }
+
+    [ContextMenu("02D Report duplicate hazard")]
+    void ReportDuplicateHazard()
+    {
+        M.HazardIdentified("Water on Floor");
+    }
+
+    // ---------- BREAKER ----------
 
     [ContextMenu("03 Breaker OFF")]
     void BreakerOff()
@@ -60,11 +119,15 @@ public class SafetyDebug : MonoBehaviour
         M.TryVerify();
     }
 
+    // ---------- COVER ----------
+
     [ContextMenu("06 Open cover")]
     void OpenCover()
     {
         M.TryOpenCover();
     }
+
+    // ---------- FUSE ----------
 
     [ContextMenu("07 Pull damaged fuse")]
     void PullFuse()
@@ -77,6 +140,8 @@ public class SafetyDebug : MonoBehaviour
     {
         M.FuseInserted();
     }
+
+    // ---------- RESTORATION ----------
 
     [ContextMenu("09 Close cover")]
     void CloseCover()
