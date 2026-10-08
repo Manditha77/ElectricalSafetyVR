@@ -5,7 +5,6 @@ public class ElectricalSafetyManager : MonoBehaviour
 {
     public static ElectricalSafetyManager Instance { get; private set; }
 
-    // Other scripts listen to these instead of being called directly.
     public static event Action<ElectricalState> StateChanged;
     public static event Action<string, bool> MessageRaised;   // text, isUnsafe
 
@@ -21,25 +20,31 @@ public class ElectricalSafetyManager : MonoBehaviour
     public int UnsafeCount { get; private set; }
     public int HazardsFound { get; private set; }
     public int PpeWorn { get; private set; }
+    public int TotalHazards { get; private set; }
 
     bool ppeChecked, lockoutChecked, fuseRemoved;
     int liveAttempts;
 
-    void Awake() { Instance = this; }
+    void Awake()
+    {
+        Instance = this;
+        TotalHazards = FindObjectsByType<Hazard>(FindObjectsSortMode.None).Length;
+    }
 
     bool Running => SessionManager.Instance != null && SessionManager.Instance.IsRunning;
+    bool PreCheck => SessionManager.Instance != null && SessionManager.Instance.IsPreCheck;
 
-    // ---------- contract call ----------
     public void SetElectricalState(ElectricalState newState)
     {
         State = newState;
         StateChanged?.Invoke(State);
     }
 
-    // ---------- PPE and hazards ----------
+    // ---------- pre-work check ----------
+
     public void PpeItemWorn(bool isRequiredItem)
     {
-        if (!Running) return;
+        if (!PreCheck) return;
         if (isRequiredItem)
         {
             PpeWorn++;
@@ -50,13 +55,29 @@ public class ElectricalSafetyManager : MonoBehaviour
 
     public void HazardIdentified(string hazardName)
     {
-        if (!Running) return;
-        CheckPpeOnce();
+        if (!PreCheck) return;
         HazardsFound++;
-        Info("Hazard reported: " + hazardName + " (" + HazardsFound + " of " + requiredHazards + ")");
+        Info("Hazard reported: " + hazardName + " (" + HazardsFound + " of " + TotalHazards + ")");
     }
 
-    // ---------- breaker ----------
+    // Called once when training starts: scores what the pre-work check achieved.
+    public void ScorePreCheck(int attempts)
+    {
+        ppeChecked = true;
+        if (PpeWorn >= requiredPpeItems) Score("PPE", true);
+        else Unsafe("PPE", "You started the job wearing " + PpeWorn + " of " + requiredPpeItems + " PPE items.", false);
+
+        bool enoughHazards = HazardsFound >= requiredHazards;
+        string note = enoughHazards ? "" :
+            "You reported " + HazardsFound + " of " + TotalHazards + " hazards before starting work.";
+        SessionManager.Instance.RegisterAction("Hazards", enoughHazards, note);
+
+        if (attempts == 0)
+            SessionManager.Instance.UnsafeNotes.Add("You started the job without a pre-work check.");
+    }
+
+    // ---------- the job ----------
+
     public bool TryIsolate()
     {
         if (!Running) return false;
@@ -84,7 +105,6 @@ public class ElectricalSafetyManager : MonoBehaviour
                 Unsafe("Restore", "Return the fuse puller to the rack before restoring power.", false);
                 return false;
             }
-            Score("Hazards", HazardsFound >= requiredHazards);
             Score("Restore", true);
             SetElectricalState(ElectricalState.Restored);
             return true;
@@ -98,10 +118,9 @@ public class ElectricalSafetyManager : MonoBehaviour
     {
         if (!Running) return;
         CheckPpeOnce();
-        Unsafe("Isolate", "Wrong breaker. Check the job card for the correct supply.", false);
+        Unsafe("Isolate", "Wrong isolator. Check the job card for the correct supply.", false);
     }
 
-    // ---------- lockout tag ----------
     public void SetLockout(bool applied)
     {
         LockoutApplied = applied;
@@ -113,7 +132,6 @@ public class ElectricalSafetyManager : MonoBehaviour
         else Info("Lockout tag removed.");
     }
 
-    // ---------- tester ----------
     // Returns true when the tester should show "dead" (0 V).
     public bool TryVerify()
     {
@@ -140,7 +158,6 @@ public class ElectricalSafetyManager : MonoBehaviour
         return true;
     }
 
-    // ---------- cover ----------
     public bool TryOpenCover()
     {
         if (!Running) return false;
@@ -168,7 +185,6 @@ public class ElectricalSafetyManager : MonoBehaviour
 
     public void CoverClosed() { CoverOpen = false; }
 
-    // ---------- repair ----------
     public bool TryRemoveFuse()
     {
         if (!Running || !CoverOpen || State != ElectricalState.VerifiedSafe) return false;
@@ -186,7 +202,6 @@ public class ElectricalSafetyManager : MonoBehaviour
 
     public void SetToolsClear(bool clear) { ToolsClear = clear; }
 
-    // ---------- helpers ----------
     void CheckPpeOnce()
     {
         if (ppeChecked) return;

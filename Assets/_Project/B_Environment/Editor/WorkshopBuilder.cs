@@ -78,7 +78,7 @@ public static class WorkshopBuilder
         Box(g, "Trunk_Ceiling3",    V(3.5125f, 2.975f, 0f),  V(0.825f, 0.05f, 0.05f), Trunking);
         Box(g, "Trunk_CeilingTurn", V(3.9f, 2.975f, -0.3f), V(0.05f, 0.05f, 0.65f), Trunking);
         Box(g, "Trunk_EastDrop",    V(3.9f, 2.2f, -0.6f),   V(0.05f, 1.6f, 0.05f),  Trunking);
-        Box(g, "Trunk_ToBoard",     V(3.9f, 1.4f, -0.35f),  V(0.05f, 0.05f, 0.55f), Trunking);
+        Box(g, "Trunk_ToBoard",     V(3.9f, 1.4f, -0.5f),   V(0.05f, 0.05f, 0.25f), Trunking);
 
         // Fire extinguisher on the south wall, right of the door
         Box(g, "Ext_Bracket", V(-1.5f, 1.0f, -2.985f),  V(0.16f, 0.05f, 0.03f), Metal);
@@ -114,9 +114,9 @@ public static class WorkshopBuilder
               V(-3.908f, 1.42f, 0.6f), -90f, new Vector2(0.55f, 0.6f), 0.5f, Color.black);
 
         // Yellow keep-clear box on the floor in front of the breaker board
-        Box(g, "KeepClear_Front", V(2.9f, 0.005f, 0.5f),  V(0.08f, 0.01f, 1.28f), Yellow);
-        Box(g, "KeepClear_Left",  V(3.4f, 0.005f, -0.1f), V(1.0f, 0.01f, 0.08f),  Yellow);
-        Box(g, "KeepClear_Right", V(3.4f, 0.005f, 1.1f),  V(1.0f, 0.01f, 0.08f),  Yellow);
+        Box(g, "KeepClear_Front", V(2.9f, 0.005f, 0.5f),  V(0.08f, 0.01f, 2.08f), Yellow);
+        Box(g, "KeepClear_Left",  V(3.4f, 0.005f, -0.5f), V(1.0f, 0.01f, 0.08f),  Yellow);
+        Box(g, "KeepClear_Right", V(3.4f, 0.005f, 1.5f),  V(1.0f, 0.01f, 0.08f),  Yellow);        
     }
 
     // ---------- 3. hazards (Member C's prefabs — agreed with her) ----------
