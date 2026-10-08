@@ -236,6 +236,92 @@ public static class FlowSetup
         Debug.Log("Workshop: pre-work check flow set up. Save the scene (Ctrl+S).");
     }
 
+    // ---------- 4. fault effects: flickering room lights, status beacon, 3D sounds ----------
+
+    [MenuItem("Tools/Workshop/Set Up Fault Effects")]
+    static void SetUpFaultEffects()
+    {
+        GameObject workshop = GameObject.Find("Workshop_Main");
+        if (workshop == null) { Debug.LogError("Open ElectricalWorkshop first (Workshop_Main not found)."); return; }
+
+        GameObject old = GameObject.Find("FaultEffects");
+        if (old != null) Undo.DestroyObjectImmediate(old);
+
+        GameObject root = new GameObject("FaultEffects");
+        Undo.RegisterCreatedObjectUndo(root, "Fault effects");
+        FaultAtmosphere fx = root.AddComponent<FaultAtmosphere>();
+        fx.lightingRoot = workshop.transform;
+
+        // Beacon on a wall bracket above the left corner of the isolation board
+        Transform beacon = new GameObject("StatusBeacon").transform;
+        beacon.SetParent(root.transform, false);
+        beacon.position = new Vector3(3.8f, 2.55f, 1.4f);
+        Box(beacon, "Bracket", new Vector3(0.06f, 0f, 0f), new Vector3(0.12f, 0.02f, 0.1f), Charcoal);
+        Prim(PrimitiveType.Cylinder, beacon, "Base", new Vector3(0f, 0.03f, 0f), new Vector3(0.1f, 0.02f, 0.1f), Charcoal);
+        Renderer lens = Prim(PrimitiveType.Cylinder, beacon, "Lens", new Vector3(0f, 0.1f, 0f),
+                             new Vector3(0.09f, 0.05f, 0.09f), GlowMat("Mat_BeaconLens"));
+        Prim(PrimitiveType.Cylinder, beacon, "Cap", new Vector3(0f, 0.16f, 0f), new Vector3(0.09f, 0.01f, 0.09f), Charcoal);
+
+        Light glow = new GameObject("BeaconLight").AddComponent<Light>();
+        glow.transform.SetParent(beacon, false);
+        glow.transform.localPosition = new Vector3(-0.15f, 0.1f, 0f);   // just in front of the lens
+        glow.type = LightType.Point;
+        glow.range = 5f;
+        glow.intensity = 3f;
+        glow.enabled = false;
+
+        fx.beaconLight = glow;
+        fx.beaconLens = lens;
+        fx.faultHum = Audio(beacon, "FaultHumSource", true, 0.4f);
+        fx.isolateSound = Audio(beacon, "IsolateSoundSource", false, 0.8f);
+
+        EditorSceneManager.MarkSceneDirty(SceneManager.GetActiveScene());
+        Debug.Log("Workshop: fault effects set up. Save the scene (Ctrl+S).");
+    }
+
+    static Renderer Prim(PrimitiveType type, Transform parent, string name, Vector3 position, Vector3 scale, Material mat)
+    {
+        GameObject go = GameObject.CreatePrimitive(type);
+        go.name = name;
+        go.transform.SetParent(parent, false);
+        go.transform.localPosition = position;
+        go.transform.localScale = scale;
+        Renderer r = go.GetComponent<Renderer>();
+        r.sharedMaterial = mat;
+        Object.DestroyImmediate(go.GetComponent<Collider>());
+        return r;
+    }
+
+    static AudioSource Audio(Transform parent, string name, bool loop, float volume)
+    {
+        GameObject go = new GameObject(name);
+        go.transform.SetParent(parent, false);
+        AudioSource a = go.AddComponent<AudioSource>();
+        a.spatialBlend = 1f;               // fully 3D
+        a.loop = loop;
+        a.playOnAwake = false;
+        a.volume = volume;
+        a.minDistance = 1f;
+        a.maxDistance = 12f;
+        a.rolloffMode = AudioRolloffMode.Linear;
+        return a;
+    }
+
+    static Material GlowMat(string name)
+    {
+        string path = MaterialFolder + "/" + name + ".mat";
+        Material mat = AssetDatabase.LoadAssetAtPath<Material>(path);
+        if (mat != null) return mat;
+        mat = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+        mat.SetColor("_BaseColor", new Color(0.3f, 0.3f, 0.3f));
+        mat.SetFloat("_Smoothness", 0.8f);
+        mat.EnableKeyword("_EMISSION");
+        mat.SetColor("_EmissionColor", Color.black);
+        mat.globalIlluminationFlags = MaterialGlobalIlluminationFlags.RealtimeEmissive;
+        AssetDatabase.CreateAsset(mat, path);
+        return mat;
+    }    
+
     // ---------- helpers ----------
 
     static Transform Copy(Transform original, string name)
