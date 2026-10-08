@@ -14,10 +14,8 @@ public class Hazard : MonoBehaviour
 
     public void Identify()
     {
-        Debug.Log("Identify called");
-
         if (found) return;
-        if (SessionManager.Instance == null || !SessionManager.Instance.IsRunning) return;
+        if (SessionManager.Instance == null || !SessionManager.Instance.IsPreCheck) return;
 
         found = true;
         if (marker != null) marker.SetActive(true);
