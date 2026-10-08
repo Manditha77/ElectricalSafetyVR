@@ -567,6 +567,89 @@ MonoBehaviour:
   m_UseLocalSpace: 1
   m_AngleStabilization: 20
   m_PositionStabilization: 0.25
+--- !u!1 &803218607810192302
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 490376841365287134}
+  - component: {fileID: 7594229054050013243}
+  - component: {fileID: 2380108731167513170}
+  - component: {fileID: 8625620536884660454}
+  m_Layer: 0
+  m_Name: WearZone
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &490376841365287134
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 803218607810192302}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 7343582172817155706}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!136 &7594229054050013243
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 803218607810192302}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.35
+  m_Height: 0.9
+  m_Direction: 1
+  m_Center: {x: 0, y: -0.3, z: 0.15}
+--- !u!114 &2380108731167513170
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 803218607810192302}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 11603beeec5658143959179706c9dc21, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PpeLocker
+--- !u!114 &8625620536884660454
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 803218607810192302}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 972aa01c87e3e184b9821f194ca2620a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PpeFeedback
+  head: {fileID: 0}
+  messageSeconds: 2.5
 --- !u!1 &873745910284431009
 GameObject:
   m_ObjectHideFlags: 0
@@ -1195,7 +1278,8 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 490376841365287134}
   m_Father: {fileID: 6485611877275534909}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!20 &2094432015301126778
