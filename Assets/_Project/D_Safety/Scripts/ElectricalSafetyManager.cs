@@ -7,7 +7,6 @@ public class ElectricalSafetyManager : MonoBehaviour
 {
     public static ElectricalSafetyManager Instance { get; private set; }
 
-    // Events used by the warning display, audio and UI.
     public static event Action<ElectricalState> StateChanged;
     public static event Action<string, bool> MessageRaised;
 
@@ -34,11 +33,9 @@ public class ElectricalSafetyManager : MonoBehaviour
     int liveAttempts;
     int legacyPpeSequence;
 
-    // Track unique PPE items.
     readonly HashSet<string> wornPpeItems =
         new HashSet<string>();
 
-    // Track unique reported hazards.
     readonly HashSet<string> identifiedHazards =
         new HashSet<string>();
 
@@ -61,8 +58,6 @@ public class ElectricalSafetyManager : MonoBehaviour
 
     // ---------- PPE ----------
 
-    // Retained for compatibility with Member C's existing code.
-    // Use the named overload for final PPE interactables.
     public void PpeItemWorn(bool isRequiredItem)
     {
         if (!Running) return;
@@ -85,7 +80,6 @@ public class ElectricalSafetyManager : MonoBehaviour
     {
         if (!Running) return;
 
-        // Scenario 2: Incorrect PPE.
         if (!isRequiredItem)
         {
             Unsafe(
@@ -99,7 +93,6 @@ public class ElectricalSafetyManager : MonoBehaviour
         if (string.IsNullOrWhiteSpace(itemName))
             return;
 
-        // Prevent duplicate counting.
         if (wornPpeItems.Contains(itemName))
         {
             Info("[GUIDANCE] This PPE item is already worn.");
@@ -115,7 +108,6 @@ public class ElectricalSafetyManager : MonoBehaviour
         wornPpeItems.Add(itemName);
         PpeWorn = wornPpeItems.Count;
 
-        // Scenario 3: Incomplete PPE.
         if (PpeWorn < requiredPpeItems)
         {
             Info(
@@ -124,7 +116,6 @@ public class ElectricalSafetyManager : MonoBehaviour
                 " items worn. Check your remaining protective equipment."
             );
         }
-        // Scenario 4: Full PPE.
         else
         {
             Info(
@@ -135,7 +126,6 @@ public class ElectricalSafetyManager : MonoBehaviour
         }
     }
 
-    // Scenario 5: PPE removed.
     public void PpeItemRemoved(string itemName)
     {
         if (!Running) return;
@@ -160,13 +150,11 @@ public class ElectricalSafetyManager : MonoBehaviour
 
         CheckPpeOnce();
 
-        // Stop processing if the session has ended.
         if (!Running) return;
 
         if (string.IsNullOrWhiteSpace(hazardName))
             return;
 
-        // Do not count the same hazard twice.
         if (identifiedHazards.Contains(hazardName))
         {
             Info("[GUIDANCE] This hazard has already been reported.");
@@ -182,7 +170,6 @@ public class ElectricalSafetyManager : MonoBehaviour
         identifiedHazards.Add(hazardName);
         HazardsFound = identifiedHazards.Count;
 
-        // Scenario 3: Incomplete hazard inspection.
         if (HazardsFound < requiredHazards)
         {
             Info(
@@ -194,7 +181,6 @@ public class ElectricalSafetyManager : MonoBehaviour
                 requiredHazards + " hazards."
             );
         }
-        // Scenario 4: All hazards identified.
         else
         {
             Info(
@@ -220,7 +206,6 @@ public class ElectricalSafetyManager : MonoBehaviour
             return false;
         }
 
-        // NEW: Hazard inspection must be completed first.
         if (HazardsFound < requiredHazards)
         {
             Unsafe(
@@ -231,7 +216,6 @@ public class ElectricalSafetyManager : MonoBehaviour
                 false
             );
 
-            // If this was the third unsafe action, stop.
             if (!Running) return false;
         }
 
@@ -286,7 +270,9 @@ public class ElectricalSafetyManager : MonoBehaviour
             return true;
         }
 
-        Info("[GUIDANCE] Power is back on but the repair is not finished. Isolate again.");
+        Info(
+            "[GUIDANCE] Power is back on but the repair is not finished. Isolate again."
+        );
 
         SetElectricalState(ElectricalState.Energised);
 
@@ -447,21 +433,57 @@ public class ElectricalSafetyManager : MonoBehaviour
 
         if (Running)
         {
-            Info("Equipment cover closed. Return all tools before restoring power.");
+            Info(
+                "Equipment cover closed. Return all tools before restoring power."
+            );
         }
     }
 
-    // ---------- FUSE REPAIR ----------
+    // ---------- STAGE 5: FUSE REPAIR ----------
+
+    // Scenario 2: Remove fuse before voltage verification.
+    // Scenario 3: Remove fuse while the cover is closed.
+    // Scenario 4: Successfully remove damaged fuse.
 
     public bool TryRemoveFuse()
     {
-        if (!Running ||
-            !CoverOpen ||
-            State != ElectricalState.VerifiedSafe)
+        if (!Running) return false;
+
+        // Scenario 2
+        if (State != ElectricalState.VerifiedSafe)
         {
+            Unsafe(
+                "Verify",
+                "DANGER! Verify the absence of voltage before removing the fuse.",
+                false
+            );
+
             return false;
         }
 
+        // Scenario 3
+        if (!CoverOpen)
+        {
+            Unsafe(
+                "Verify",
+                "Warning! Open the equipment cover safely before removing the fuse.",
+                false
+            );
+
+            return false;
+        }
+
+        // Prevent removing the same fuse twice.
+        if (fuseRemoved)
+        {
+            Info(
+                "[GUIDANCE] The damaged fuse has already been removed."
+            );
+
+            return false;
+        }
+
+        // Scenario 4
         fuseRemoved = true;
 
         Info("Damaged fuse removed. Fit the new fuse.");
@@ -469,19 +491,77 @@ public class ElectricalSafetyManager : MonoBehaviour
         return true;
     }
 
+    // Scenario 5: Correct replacement.
+    // Scenario 6: Insert new fuse before removing old fuse.
+
     public void FuseInserted()
     {
-        if (!Running ||
-            !fuseRemoved ||
-            State != ElectricalState.VerifiedSafe)
+        if (!Running) return;
+
+        // Scenario 6
+        if (!fuseRemoved)
         {
+            Info(
+                "[GUIDANCE] Remove the damaged fuse before installing the replacement fuse."
+            );
+
             return;
         }
 
+        // Voltage verification is mandatory.
+        if (State != ElectricalState.VerifiedSafe)
+        {
+            Unsafe(
+                "Verify",
+                "Warning! Verify the absence of voltage before replacing the fuse.",
+                false
+            );
+
+            return;
+        }
+
+        if (!CoverOpen)
+        {
+            Unsafe(
+                "Verify",
+                "Warning! Open the equipment cover before installing the replacement fuse.",
+                false
+            );
+
+            return;
+        }
+
+        // Scenario 5
         SetElectricalState(ElectricalState.Repaired);
 
         Info(
             "New fuse fitted. Close the cover, clear your tools, then restore the supply."
+        );
+    }
+
+    // ---------- SCENARIO 7: WRONG FUSE ----------
+
+    public void WrongFuseSelected()
+    {
+        if (!Running) return;
+
+        Unsafe(
+            "Verify",
+            "Incorrect replacement fuse! Check the required fuse type and rating before installation.",
+            false
+        );
+    }
+
+    // ---------- SCENARIO 7: WRONG TOOL ----------
+
+    public void WrongToolSelected()
+    {
+        if (!Running) return;
+
+        Unsafe(
+            "Verify",
+            "Incorrect tool! Use the approved fuse puller to remove the damaged fuse.",
+            false
         );
     }
 
@@ -532,7 +612,10 @@ public class ElectricalSafetyManager : MonoBehaviour
 
     void Score(string decision, bool correct)
     {
-        SessionManager.Instance.RegisterAction(decision, correct);
+        SessionManager.Instance.RegisterAction(
+            decision,
+            correct
+        );
     }
 
     void Info(string text)

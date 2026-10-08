@@ -69,31 +69,31 @@ public class SafetyDebug : MonoBehaviour
 
     // ---------- HAZARD TESTS ----------
 
-    [ContextMenu("02 Report hazard 1")]
+    [ContextMenu("Hazard 01 - Report water on floor")]
     void ReportHazard1()
     {
         M.HazardIdentified("Water on Floor");
     }
 
-    [ContextMenu("02A Report hazard 2")]
+    [ContextMenu("Hazard 02 - Report damaged cable")]
     void ReportHazard2()
     {
         M.HazardIdentified("Damaged Cable");
     }
 
-    [ContextMenu("02B Report hazard 3")]
+    [ContextMenu("Hazard 03 - Report overloaded socket")]
     void ReportHazard3()
     {
         M.HazardIdentified("Overloaded Socket");
     }
 
-    [ContextMenu("02C Report hazard 4")]
+    [ContextMenu("Hazard 04 - Report metal tool hazard")]
     void ReportHazard4()
     {
         M.HazardIdentified("Metal Tool Hazard");
     }
 
-    [ContextMenu("02D Report duplicate hazard")]
+    [ContextMenu("Hazard 05 - Report duplicate hazard")]
     void ReportDuplicateHazard()
     {
         M.HazardIdentified("Water on Floor");
@@ -139,6 +139,20 @@ public class SafetyDebug : MonoBehaviour
     void FitFuse()
     {
         M.FuseInserted();
+    }
+
+    // ---------- STAGE 5: INCORRECT FUSE / TOOL ----------
+
+    [ContextMenu("Stage 5 - Wrong fuse selected")]
+    void TestWrongFuse()
+    {
+        M.WrongFuseSelected();
+    }
+
+    [ContextMenu("Stage 5 - Wrong tool selected")]
+    void TestWrongTool()
+    {
+        M.WrongToolSelected();
     }
 
     // ---------- RESTORATION ----------
