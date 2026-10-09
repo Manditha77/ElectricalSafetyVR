@@ -65,7 +65,28 @@ public static class HazardBridge
 
     public static bool InPreCheck => Phase == "PreCheck";
     public static bool InTraining => Phase == "Training";
-    public static bool Active { get { var p = Phase; return p == "PreCheck" || p == "Training"; } }
+    //public static bool Active { get { var p = Phase; return p == "PreCheck" || p == "Training"; } }
+
+    public static bool PpeComplete
+    {
+        get
+        {
+            var manager = ElectricalSafetyManager.Instance;
+            return manager != null &&
+                   manager.PpeWorn >= manager.requiredPpeItems;
+        }
+    }
+
+    public static bool Active
+    {
+        get
+        {
+            var phase = Phase;
+
+            return phase == "Training" ||
+                   (phase == "PreCheck" && PpeComplete);
+        }
+    }
 
     // "Energised", "Isolated", "VerifiedSafe", "Repaired", "Restored"
     public static string State
