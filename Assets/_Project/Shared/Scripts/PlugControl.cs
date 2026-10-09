@@ -1,6 +1,6 @@
 using UnityEngine;
 
-// A mains plug in a wall socket. Grab it and pull it out = the item is disconnected.
+// Grab and remove the plug from its socket to disconnect the item.
 // The lead is drawn as a sagging cable from the plug to the item.
 public class PlugControl : HazardGrabbable
 {
@@ -8,9 +8,10 @@ public class PlugControl : HazardGrabbable
     public Transform leadAnchor;    // where the lead joins the item (cable / strip)
     public Transform leadPoint;     // where the lead leaves the plug
     public LineRenderer lead;
+
     public float leadLength = 1.5f;
     public float pullOut = 0.06f;
-    public Renderer socketIndicator; // red "ON" neon on the socket
+    public Renderer socketIndicator;  // red "ON" neon on the socket
     public bool zapWhenLive = false;  // small arc when a live damaged lead is pulled out
 
     [Header("Using a socket/cable model")]
@@ -23,7 +24,8 @@ public class PlugControl : HazardGrabbable
 
     void Start()
     {
-        if (seat != null) Park(seat.position, seat.rotation);
+        if (seat != null)
+            Park(seat.position, seat.rotation);
         ShowOwn(!HasModel);
     }
 
@@ -46,68 +48,122 @@ public class PlugControl : HazardGrabbable
     // Pressing grip on the plug pulls it out straight away (reliable with the simulator ray).
     protected override void OnGrab()
     {
-        if (hazard != null && !hazard.Spotted) hazard.Spot();
-        if (Plugged) Unplug();
+        if (hazard != null && !hazard.Spotted)
+            hazard.Spot();
+
+        if (Plugged && HazardBridge.Active)
+            Unplug();
     }
 
     protected override void Update()
     {
         base.Update();
-        if (seat == null) return;
 
-        if (held && Plugged && Vector3.Distance(transform.position, seat.position) > pullOut)
-            Unplug();
+        if (seat == null || !HazardBridge.Active)
+            return;
 
-        // The lead is only so long: if the hand goes too far, the plug slips out of it.
+        CheckUnplugged();
+
+        // Release the plug if the player stretches the cable too far.
         if (held && leadAnchor != null && leadPoint != null &&
-            Vector3.Distance(leadPoint.position, leadAnchor.position) > leadLength + 0.3f)
+            Vector3.Distance(leadPoint.position, leadAnchor.position)
+                > leadLength + 0.3f)
+        {
             ForceRelease();
+        }
+    }
+
+    void CheckUnplugged()
+    {
+        if (seat == null || !HazardBridge.Active || !Plugged)
+            return;
+
+        if (Vector3.Distance(transform.position, seat.position) > pullOut)
+            Unplug();
     }
 
     void Unplug()
     {
+        if (!Plugged) return;
         Plugged = false;
+
         Sfx.PlayAt(Sfx.Click, seat.position, 0.9f);
-        if (zapWhenLive) Sfx.PlayAt(Sfx.Zap, seat.position, 0.7f);
-        if (socketIndicator != null) socketIndicator.enabled = false;
+        if (zapWhenLive)
+            Sfx.PlayAt(Sfx.Zap, seat.position, 0.7f);
+
+        if (socketIndicator != null)
+            socketIndicator.enabled = false;
+
+        // swap the model's plug for ours once it is pulled out
         if (HasModel)
         {
             foreach (var g in modelWhilePlugged) if (g != null) g.SetActive(false);
             ShowOwn(true);
         }
-        if (hazard != null) hazard.Identify();
+
+        if (hazard != null)
+            hazard.Identify();
     }
 
     protected override void OnRelease()
     {
+        CheckUnplugged();
+
         if (leadAnchor != null && leadPoint != null)
         {
-            Vector3 a = leadAnchor.position, p = leadPoint.position;
+            Vector3 a = leadAnchor.position;
+            Vector3 p = leadPoint.position;
             float d = Vector3.Distance(a, p);
-            if (d > leadLength) transform.position += (a - p).normalized * (d - leadLength + 0.05f);
+
+            if (d > leadLength)
+            {
+                transform.position +=
+                    (a - p).normalized * (d - leadLength + 0.05f);
+            }
         }
+
         Drop();
     }
 
     void LateUpdate()
     {
+        CheckUnplugged();
+
         if (lead != null && leadAnchor != null && leadPoint != null)
-            DrawLead(lead, leadPoint.position, leadAnchor.position, leadLength);
+        {
+            DrawLead(
+                lead,
+                leadPoint.position,
+                leadAnchor.position,
+                leadLength);
+        }
     }
 
-    public static void DrawLead(LineRenderer lr, Vector3 a, Vector3 b, float length)
+    public static void DrawLead(
+        LineRenderer lr,
+        Vector3 a,
+        Vector3 b,
+        float length)
     {
         const int N = 24;
-        if (lr.positionCount != N) lr.positionCount = N;
+
+        if (lr.positionCount != N)
+            lr.positionCount = N;
+
         float d = Vector3.Distance(a, b);
         float sag = Mathf.Max(0.02f, (length - d) * 0.5f);
         float floor = lr.widthMultiplier * 0.5f + 0.004f;
+
         for (int i = 0; i < N; i++)
         {
             float t = i / (N - 1f);
             Vector3 p = Vector3.Lerp(a, b, t);
+
             p.y -= sag * 4f * t * (1f - t);
-            if (p.y < floor) p.y = floor;
+
+            if (p.y < floor)
+                p.y = floor;
+
             lr.SetPosition(i, p);
         }
     }
