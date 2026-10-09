@@ -4991,6 +4991,7 @@ GameObject:
   - component: {fileID: 1848839839402950723}
   - component: {fileID: 2417859616343907181}
   - component: {fileID: 2703176105793734047}
+  - component: {fileID: 5400941511837575456}
   m_Layer: 2
   m_Name: PlayerRig
   m_TagString: Untagged
@@ -5142,6 +5143,25 @@ MonoBehaviour:
   head: {fileID: 7343582172817155706}
   roomCentre: {x: 0, y: 0, z: 0}
   halfSize: {x: 3.7, y: 2.7}
+--- !u!114 &5400941511837575456
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5401819064287336851}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d55afc39d20d11f488c8b8de080fba80, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerCollisionBlocker
+  rig: {fileID: 3662409051898159491}
+  head: {fileID: 7343582172817155706}
+  bodyRadius: 0.2
+  lowestCheckHeight: 0.5
+  blockingLayers:
+    serializedVersion: 2
+    m_Bits: 51
 --- !u!1 &5534267610715426494
 GameObject:
   m_ObjectHideFlags: 0
