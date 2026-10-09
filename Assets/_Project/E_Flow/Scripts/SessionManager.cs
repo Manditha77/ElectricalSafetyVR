@@ -11,6 +11,7 @@ public class SessionManager : MonoBehaviour
 
     public static event Action<SessionPhase> PhaseChanged;
     public static event Action ScoreChanged;
+    public static event Action PreCheckTimedOut;
 
     public static readonly string[] DecisionKeys =
         { "PPE", "Hazards", "Isolate", "Lockout", "Verify", "Restore" };
@@ -54,7 +55,16 @@ public class SessionManager : MonoBehaviour
             PreCheckSecondsLeft -= Time.deltaTime;
             ElectricalSafetyManager m = ElectricalSafetyManager.Instance;
             bool allDone = m != null && m.PpeWorn >= m.requiredPpeItems && m.HazardsFound >= m.TotalHazards;
-            if (PreCheckSecondsLeft <= 0f || allDone) EndPreCheck();
+            if (PreCheckSecondsLeft <= 0f)
+            {
+                PreCheckSecondsLeft = 0f;
+                EndPreCheck();
+                PreCheckTimedOut?.Invoke();
+            }
+            else if (allDone)
+            {
+                EndPreCheck();
+            }
         }
     }
 
