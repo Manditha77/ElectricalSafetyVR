@@ -17,6 +17,12 @@ public class LooseToolControl : HazardGrabbable
 
     protected override void OnRelease()
     {
+        if (!HazardBridge.Active)
+        {
+            Stored = false;
+            ReturnHome();
+            return;
+        }
         if (trolleySeat != null)
         {
             Vector3 d = transform.position - trolleySeat.position;
