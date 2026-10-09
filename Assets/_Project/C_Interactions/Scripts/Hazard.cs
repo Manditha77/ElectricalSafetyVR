@@ -21,6 +21,9 @@ public class Hazard : MonoBehaviour
     [TextArea(2, 4)] public string control = "";
     [TextArea(2, 4)] public string controlledText = "Made safe.";
     public HazardCallout callout;
+    [Header("Hazard instruction voice")]
+    public AudioClip instructionClip;
+    public AudioSource instructionSource;
 
     [Header("Options")]
     public bool hideMarkerWhenControlled;
@@ -103,6 +106,12 @@ public class Hazard : MonoBehaviour
             bool danger = level == HazardLevel.Danger;
             Sfx.PlayAt(danger ? Sfx.Alert : Sfx.Ding, transform.position, 0.7f);
             HazardBridge.Say((danger ? "DANGER: " : "CAUTION: ") + Plain(title) + ". " + control);
+
+            if (instructionClip != null && instructionSource != null)
+            {
+                instructionSource.Stop();
+                instructionSource.PlayOneShot(instructionClip);
+            }
 
             if (disableCollidersWhenSpotted)
                 foreach (var c in GetComponentsInChildren<Collider>()) c.enabled = false;
