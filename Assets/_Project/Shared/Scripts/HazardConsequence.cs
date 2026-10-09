@@ -27,6 +27,8 @@ public class HazardConsequence : MonoBehaviour
 
     void Start()
     {
+        if (hazard == null) hazard = Hazard.Find(name);
+        if (tool == null && type == ConsequenceType.ToolLeftOnMachine) tool = FindFirstObjectByType<LooseToolControl>();
         if (glow != null) glow.intensity = 0f;
         if (loop != null)
         {
