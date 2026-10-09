@@ -35454,10 +35454,6 @@ PrefabInstance:
         dries.
       objectReference: {fileID: 0}
     - target: {fileID: 9025349509995360318, guid: 72f9750436a2f8449acf355384a54632, type: 3}
-      propertyPath: disableCollidersWhenSpotted
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 9025349509995360318, guid: 72f9750436a2f8449acf355384a54632, type: 3}
       propertyPath: instructionClip
       value: 
       objectReference: {fileID: 8300000, guid: 14a31eb2717fa98418ab1eb9ad178c7b, type: 3}
@@ -36161,6 +36157,10 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 9025349509995360318, guid: 8aef843a1780b7749a08870a025e8519, type: 3}
+      propertyPath: 
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 9025349509995360318, guid: 8aef843a1780b7749a08870a025e8519, type: 3}
       propertyPath: risk
       value: 'Too many plugs on one strip: it overheats, melts and can start a fire.
         It is warm and buzzing.'
@@ -36189,11 +36189,6 @@ PrefabInstance:
       propertyPath: instructionSource
       value: 
       objectReference: {fileID: 1198769671}
-    - target: {fileID: 9025349509995360318, guid: 8aef843a1780b7749a08870a025e8519, type: 3}
-
-      propertyPath: disableCollidersWhenSpotted
-      value: 1
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -47081,6 +47076,10 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 9025349509995360318, guid: 4be4ebe65bf156f469fee097d625d637, type: 3}
+      propertyPath: 
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 9025349509995360318, guid: 4be4ebe65bf156f469fee097d625d637, type: 3}
       propertyPath: risk
       value: 'Bare conductors at 230 V: electric shock, sparks and fire. It is on
         a wall socket, so isolating W2 will NOT make it dead.'
@@ -47101,11 +47100,6 @@ PrefabInstance:
       propertyPath: controlledText
       value: Unplugged and tagged DANGER - DO NOT USE. Taken out of service.
       objectReference: {fileID: 0}
-    - target: {fileID: 9025349509995360318, guid: 4be4ebe65bf156f469fee097d625d637, type: 3}
-
-      propertyPath: instructionClip
-      value: 
-      objectReference: {fileID: 8300000, guid: 6192c65f4646b204db18d60102bb20e6, type: 3}
     - target: {fileID: 9025349509995360318, guid: 4be4ebe65bf156f469fee097d625d637, type: 3}
       propertyPath: instructionSource
       value: 
@@ -56087,6 +56081,7 @@ SceneRoots:
   - {fileID: 142305624}
   - {fileID: 1662071445}
   - {fileID: 877831059}
+  - {fileID: 4788632989818122380}
   - {fileID: 468413087}
   - {fileID: 1977632199}
   - {fileID: 1969469310}
@@ -56094,7 +56089,6 @@ SceneRoots:
   - {fileID: 1945168408}
   - {fileID: 996615575}
   - {fileID: 1232468856}
-  - {fileID: 4788632989818122380}
   - {fileID: 1529816054352622860}
   - {fileID: 5965282296305791875}
   - {fileID: 140269366196216673}
