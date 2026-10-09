@@ -77,8 +77,12 @@ public class TrainingFlow : MonoBehaviour
     string WelcomeText()
     {
         var m = ElectricalSafetyManager.Instance;
-        int ppe = m != null ? m.requiredPpeItems : 6;
-        int secs = Mathf.RoundToInt(SessionManager.Instance.preCheckSeconds);
+        return BuildWelcomeText(m != null ? m.requiredPpeItems : 6, Mathf.RoundToInt(SessionManager.Instance.preCheckSeconds));
+    }
+
+    // Also used by the editor so the Scene view shows the same text as the game.
+    public static string BuildWelcomeText(int ppe, int secs)
+    {
         return
             "<size=125%><b>WELCOME, TRAINEE</b></size>\n" +
             "<color=#3A3A3A>Workstation 2 has a blown fuse. Make the area safe and replace it.</color>\n\n" +
@@ -91,6 +95,15 @@ public class TrainingFlow : MonoBehaviour
             "- Follow the <b>JOB CARD</b> on the wall beside Workstation 2.</indent>\n\n" +
             "<color=#B00020><b>POWER CUT?</b></color>  An <b>emergency torch</b> charges under the yellow beacon, by the isolation board.</align>";
     }
+
+    public static string BuildFirstSummary(int ppe)
+    {
+        return "<color=#1F4E99><b>Your pre-work check is scored.</b> All " + ppe +
+               " PPE items are required; then find as many hazards as you can.</color>";
+    }
+
+    // Same text styling, usable from the editor.
+    public static void StyleText(TMP_Text t, float min, float max) => Style(t, min, max);
 
     void Refresh(SessionPhase phase)
     {
@@ -145,8 +158,7 @@ public class TrainingFlow : MonoBehaviour
     string Summary(SessionManager s, ElectricalSafetyManager m)
     {
         if (!s.PreCheckDone)
-            return "<color=#1F4E99><b>Your pre-work check is scored.</b> All " + m.requiredPpeItems +
-                   " PPE items are required; then find as many hazards as you can.</color>";
+            return BuildFirstSummary(m.requiredPpeItems);
 
         var sb = new StringBuilder();
         int total = m.TotalHazards;
