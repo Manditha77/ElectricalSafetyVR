@@ -14,6 +14,7 @@ public class TrainingFlow : MonoBehaviour
 
     PpeItem[] ppeItems;
     Hazard[] hazards;
+    TrainingTool[] tools;
 
     void OnEnable()  { SessionManager.PhaseChanged += Refresh; }
     void OnDisable() { SessionManager.PhaseChanged -= Refresh; }
@@ -22,6 +23,7 @@ public class TrainingFlow : MonoBehaviour
     {
         ppeItems = FindObjectsByType<PpeItem>(FindObjectsSortMode.None);
         hazards = FindObjectsByType<Hazard>(FindObjectsSortMode.None);
+        tools = FindObjectsByType<TrainingTool>(FindObjectsSortMode.None);
         preCheckButton.onClick.AddListener(() => SessionManager.Instance.StartPreCheck());
         startTrainingButton.onClick.AddListener(() => SessionManager.Instance.BeginTraining());
         Refresh(SessionManager.Instance.Phase);
@@ -33,8 +35,9 @@ public class TrainingFlow : MonoBehaviour
         SessionManager s = SessionManager.Instance;
         ElectricalSafetyManager m = ElectricalSafetyManager.Instance;
 
-        // PPE and hazards can only be used during the pre-work check.
+        // PPE and hazards only during the pre-work check; job equipment only during training.
         bool checking = phase == SessionPhase.PreCheck;
+        bool training = phase == SessionPhase.Training;
         foreach (PpeItem item in ppeItems)
         {
             if (item == null) continue;
@@ -47,6 +50,12 @@ public class TrainingFlow : MonoBehaviour
             XRSimpleInteractable select = hazard.GetComponent<XRSimpleInteractable>();
             if (select != null) select.enabled = checking;
         }
+        foreach (TrainingTool tool in tools)
+        {
+            if (tool == null) continue;
+            foreach (XRBaseInteractable i in tool.GetComponentsInChildren<XRBaseInteractable>(true))
+                i.enabled = training;
+        }
 
         if (welcomeGroup != null) welcomeGroup.SetActive(phase == SessionPhase.Briefing);
 
@@ -55,10 +64,8 @@ public class TrainingFlow : MonoBehaviour
         startTrainingButton.interactable = checkedOnce;
         preCheckButton.interactable = !allDone;
         preCheckButtonLabel.text = checkedOnce ? "Redo Pre-Work Check" : "Start Pre-Work Check";
-
-        // Grey when not available, normal colour when it is.
         SetButtonLook(startTrainingButton, checkedOnce, new Color(0.15f, 0.55f, 0.25f), Color.white);
-        SetButtonLook(preCheckButton, !allDone, new Color(0.98f, 0.72f, 0.15f), new Color(0.1f, 0.1f, 0.1f));        
+        SetButtonLook(preCheckButton, !allDone, new Color(0.98f, 0.72f, 0.15f), new Color(0.1f, 0.1f, 0.1f));
         summaryText.text = Summary(s, m, allDone);
     }
 
@@ -66,7 +73,6 @@ public class TrainingFlow : MonoBehaviour
     {
         Image image = button.GetComponent<Image>();
         if (image != null) image.color = available ? fill : new Color(0.62f, 0.62f, 0.62f);
-
         TMP_Text label = button.GetComponentInChildren<TMP_Text>();
         if (label != null) label.color = available ? textColor : new Color(0.35f, 0.35f, 0.35f);
     }

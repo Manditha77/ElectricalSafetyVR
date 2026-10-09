@@ -72,8 +72,16 @@ public static class FlowSetup
             {
                 RemoveChild(lamp, "LampLabel");
                 TextMeshPro t = Label(lamp, "LampLabel", "ISOLATED", new Vector3(0f, -0.12f, 0.01f), 180f,
-                                      new Vector2(0.3f, 0.08f), 0.35f, Color.white);
+                                      new Vector2(0.3f, 0.08f), 0.6f, Color.white);
                 t.fontStyle = FontStyles.Bold;
+            }
+            // Indicator lamp should light its own area, not the whole wall.
+            Transform lampGlow = root.transform.Find("PanelLamp/Glow");
+            if (lampGlow != null)
+            {
+                Light l = lampGlow.GetComponent<Light>();
+                l.intensity = 0.8f;
+                l.range = 1.2f;
             }
 
             PrefabUtility.SaveAsPrefabAsset(root, BreakerPrefab);
@@ -97,7 +105,7 @@ public static class FlowSetup
         plate.transform.SetParent(iso, false);
         Box(plate.transform, "Plate", new Vector3(0f, 0.34f, -0.075f), new Vector3(0.34f, 0.11f, 0.006f), White);
         Label(plate.transform, "Text", "<size=140%><b>" + code + "</b></size>\n" + name,
-              new Vector3(0f, 0.34f, -0.08f), 0f, new Vector2(0.32f, 0.1f), 0.13f, Color.black);
+              new Vector3(0f, 0.34f, -0.08f), 0f, new Vector2(0.32f, 0.1f), 0.35f, Color.black);
     }
 
     // ---------- 2. isolation point on the wall: mounting board, safety border, sign above ----------
@@ -266,8 +274,8 @@ public static class FlowSetup
         glow.transform.SetParent(beacon, false);
         glow.transform.localPosition = new Vector3(-0.15f, 0.1f, 0f);   // just in front of the lens
         glow.type = LightType.Point;
-        glow.range = 5f;
-        glow.intensity = 3f;
+        glow.range = 2.5f;
+        glow.intensity = 1f;
         glow.enabled = false;
 
         fx.beaconLight = glow;
