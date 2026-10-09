@@ -59,6 +59,9 @@ public abstract class HazardGrabbable : MonoBehaviour
     }
 
     protected virtual void OnGrab() { }
+
+    // Put this object in its "made safe" state without the trainee (missed hazard / restart training).
+    public virtual void ForceSafe() { }
     protected virtual void OnRelease() { Drop(); }
 
     protected virtual void Update()
@@ -66,7 +69,8 @@ public abstract class HazardGrabbable : MonoBehaviour
         if (grab != null && !held)
         {
             // same rule as TrainingFlow: in the pre-work check, PPE first, then hazards
-            bool on = HazardBridge.Active && (this is TorchControl || !HazardBridge.InPreCheck || HazardBridge.PpeComplete);
+            bool on = HazardBridge.Active && (this is TorchControl ||
+                      !HazardBridge.InPreCheck || (HazardBridge.PpeComplete && !HazardBridge.Reviewing));
             if (grab.enabled != on) grab.enabled = on;
         }
         if (transform.position.y < -2f) ReturnHome();

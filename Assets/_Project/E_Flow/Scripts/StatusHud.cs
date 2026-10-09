@@ -50,12 +50,14 @@ public class StatusHud : MonoBehaviour
     {
         ElectricalSafetyManager.MessageRaised += OnMessage;
         SessionManager.PhaseChanged += OnPhase;
+        SessionManager.PreCheckStageChanged += OnStage;
     }
 
     void OnDisable()
     {
         ElectricalSafetyManager.MessageRaised -= OnMessage;
         SessionManager.PhaseChanged -= OnPhase;
+        SessionManager.PreCheckStageChanged -= OnStage;
     }
 
     void OnMessage(string t, bool isUnsafe)
@@ -71,27 +73,44 @@ public class StatusHud : MonoBehaviour
         if (phase == SessionPhase.PreCheck)
         {
             Banner("CHECK STARTED", Green);
-            Show("Put on your PPE and report every hazard.", Color.white);
         }
-        else if (phase == SessionPhase.Briefing && s != null && s.PreCheckAttempts > 0)
+        else if (phase == SessionPhase.Briefing && s != null && s.PreCheckDone)
         {
-            bool done = m != null && m.PpeWorn >= m.requiredPpeItems && m.HazardsFound >= m.TotalHazards;
-            if (done) Banner("CHECK COMPLETE", Green);
-            else Banner("TIME UP", Red);
-            Show("Go back to the welcome board.", Amber);
+            bool all = m != null && m.HazardsFound >= m.TotalHazards;
+            Banner(all ? "CHECK COMPLETE" : "CHECK FINISHED", all ? Green : Amber);
+            Show("Go back to the welcome board and press Start Training.", Amber, 8f);
         }
         else if (phase == SessionPhase.Training)
         {
-            Banner("TRAINING STARTED", Green);
-            Show("Follow the job card.", Color.white);
+            Banner(s != null && s.RestartedTraining ? "TRAINING RESTARTED" : "TRAINING STARTED", Green);
+            Show("Follow the JOB CARD on the wall beside Workstation 2 for every step.", Amber, 9f);
         }
     }
 
-    void Show(string t, Color c)
+    void OnStage(PreCheckStage stage)
+    {
+        SessionManager s = SessionManager.Instance;
+        if (stage == PreCheckStage.Ppe)
+            Show("Go to the PPE station and put on ALL your PPE. The hazard timer starts when you are fully protected.", Color.white, 7f);
+        else if (stage == PreCheckStage.Hazards)
+        {
+            Banner("PPE COMPLETE", Green);
+            Show("Now find and make safe every hazard. The timer is running.", Color.white, 6f);
+        }
+        else if (stage == PreCheckStage.Review && s != null)
+        {
+            Banner("TIME UP", Red);
+            Show("Look around: the " + s.MissedHazards + " hazard(s) you missed are flashing red.", Amber, 8f);
+        }
+    }
+
+    void Show(string t, Color c) => Show(t, c, messageSeconds);
+
+    void Show(string t, Color c, float seconds)
     {
         message = t;
         messageColor = c;
-        messageUntil = Time.time + messageSeconds;
+        messageUntil = Time.time + seconds;
     }
 
     void Banner(string t, Color c)
@@ -120,20 +139,36 @@ public class StatusHud : MonoBehaviour
         }
         else if (s.IsPreCheck && m != null)
         {
-            int secs = Mathf.CeilToInt(Mathf.Max(0f, s.PreCheckSecondsLeft));
-            string clock = (secs / 60) + ":" + (secs % 60).ToString("00");
-
-            Color clockColor = Color.white;
-            if (secs <= warningSeconds)
+            if (s.Stage == PreCheckStage.Ppe)
             {
-                bool blinkOn = Mathf.FloorToInt(Time.time * 4f) % 2 == 0;   // 2 blinks per second
-                clockColor = blinkOn ? Red : new Color(Red.r, Red.g, Red.b, 0.2f);
+                body.Append("PRE-WORK CHECK\n");
+                body.Append("<size=150%><b>").Append(Colorize("PPE " + m.PpeWorn + " / " + m.requiredPpeItems, Amber)).Append("</b></size>\n");
+                body.Append("Put on ALL your PPE to start the hazard check\n");
             }
+            else if (s.Stage == PreCheckStage.Review)
+            {
+                int r = Mathf.CeilToInt(Mathf.Max(0f, s.ReviewSecondsLeft));
+                body.Append(Colorize("MISSED HAZARDS", Red)).Append("\n");
+                body.Append("<size=150%><b>").Append(Colorize("LOOK AROUND  0:" + r.ToString("00"), Amber)).Append("</b></size>\n");
+                body.Append("Hazards found ").Append(m.HazardsFound).Append(" / ").Append(m.TotalHazards).Append("\n");
+            }
+            else
+            {
+                int secs = Mathf.CeilToInt(Mathf.Max(0f, s.PreCheckSecondsLeft));
+                string clock = (secs / 60) + ":" + (secs % 60).ToString("00");
 
-            body.Append("PRE-WORK CHECK\n");
-            body.Append("<size=170%><b>").Append(Colorize(clock, clockColor)).Append("</b></size>\n");
-            body.Append("PPE ").Append(m.PpeWorn).Append(" / ").Append(m.requiredPpeItems)
-                .Append("    Hazards ").Append(m.HazardsFound).Append(" / ").Append(m.TotalHazards).Append("\n");
+                Color clockColor = Color.white;
+                if (secs <= warningSeconds)
+                {
+                    bool blinkOn = Mathf.FloorToInt(Time.time * 4f) % 2 == 0;   // 2 blinks per second
+                    clockColor = blinkOn ? Red : new Color(Red.r, Red.g, Red.b, 0.2f);
+                }
+
+                body.Append("PRE-WORK CHECK\n");
+                body.Append("<size=170%><b>").Append(Colorize(clock, clockColor)).Append("</b></size>\n");
+                body.Append("PPE ").Append(m.PpeWorn).Append(" / ").Append(m.requiredPpeItems)
+                    .Append("    Hazards ").Append(m.HazardsFound).Append(" / ").Append(m.TotalHazards).Append("\n");
+            }
         }
 
         if (Time.time < messageUntil) body.Append(Colorize(message, messageColor));

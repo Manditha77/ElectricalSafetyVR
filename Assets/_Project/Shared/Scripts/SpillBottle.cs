@@ -66,4 +66,14 @@ public class SpillBottle : HazardGrabbable
         }
         Drop();
     }
+
+    public override void ForceSafe()
+    {
+        if (Binned) return;
+        if (held) ForceRelease();
+        Vector3 p = binDrop != null ? binDrop.position : (bin != null ? bin.position + Vector3.up * 0.5f : transform.position);
+        Park(p, Quaternion.Euler(70f, Random.Range(0f, 360f), 0f));
+        Binned = true;
+        if (grab != null) grab.enabled = false;
+    }
 }

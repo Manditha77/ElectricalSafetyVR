@@ -177,6 +177,19 @@ public class MopControl : HazardGrabbable
         else hazard.ReportProgress("Floor mopped. Now put the spilled bottle in the WASTE bin.");
     }
 
+    public override void ForceSafe()
+    {
+        if (Done) return;
+        Done = true;
+        for (int i = 0; i < blobs.Count; i++)
+        {
+            if (keep.Contains(i)) { wet[i] = 0.2f; Apply(i); }
+            else blobs[i].gameObject.SetActive(false);
+        }
+        if (held) ForceRelease();
+        ReturnHome();
+    }
+
     // Let go = the mop goes back in the bucket.
     protected override void OnRelease() => ReturnHome();
 }

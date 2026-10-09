@@ -77,6 +77,27 @@ public class HazardCallout : MonoBehaviour
         Show(showControlledFor);
     }
 
+    // Time up: a hazard the trainee missed
+    public void ShowMissed(HazardLevel level, string title, string risk, string control)
+    {
+        SetBar(Red, Color.white);
+        header.text = "<b>MISSED</b>   " + title;
+        baseBody = "<color=#FF8A80><b>RISK</b></color>   " + risk +
+                   "\n<color=#80D8FF><b>SHOULD HAVE</b></color>   " + control;
+        body.text = baseBody;
+        Show(-1f);
+    }
+
+    // After the review: the missed hazard has been made safe for the trainee
+    public void ShowMadeSafeForYou(string text)
+    {
+        SetBar(Amber, Color.black);
+        header.text = "<b>MADE SAFE FOR YOU</b>";
+        body.text = text + "\n<color=#FFD180>You missed this one. It is recorded in your result.</color>";
+        baseBody = "";
+        Show(showControlledFor);
+    }
+
     void Show(float seconds)
     {
         if (card == null) return;
