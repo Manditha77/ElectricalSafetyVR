@@ -64,6 +64,8 @@ public static class HazardBridge
     }
 
     public static bool InPreCheck => Phase == "PreCheck";
+    // time is up and missed hazards are flashing: nothing can be changed
+    public static bool Reviewing => SessionManager.Instance != null && SessionManager.Instance.IsReviewing;
     public static bool InTraining => Phase == "Training";
     public static bool Active { get { var p = Phase; return p == "PreCheck" || p == "Training"; } }
 

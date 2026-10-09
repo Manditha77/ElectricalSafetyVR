@@ -34,6 +34,7 @@ public class Hazard : MonoBehaviour
     public bool ControlledLate { get; private set; }
     public bool Found => Controlled;        // kept for older scripts
     public string Outcome { get; set; }     // what went wrong in training, for the report
+    public bool MadeSafeForYou { get; private set; }  // missed in the check, made safe after the review
 
     void OnEnable() { if (!All.Contains(this)) All.Add(this); }
     void OnDisable() { All.Remove(this); }
@@ -88,7 +89,7 @@ public class Hazard : MonoBehaviour
     // Step 1: the trainee recognised the hazard.
     public void Spot()
     {
-        if (!HazardBridge.Active) return;
+        if (!HazardBridge.Active || HazardBridge.Reviewing) return;
 
         if (Controlled)
         {
@@ -113,7 +114,7 @@ public class Hazard : MonoBehaviour
     // Step 2: the control action is done. (Name kept so old wiring still compiles.)
     public void Identify()
     {
-        if (Controlled || !HazardBridge.Active) return;
+        if (Controlled || !HazardBridge.Active || HazardBridge.Reviewing) return;
         if (!Spotted) Spot();
 
         bool inCheck = HazardBridge.InPreCheck;
@@ -128,6 +129,70 @@ public class Hazard : MonoBehaviour
             ElectricalSafetyManager.Instance.HazardIdentified(hazardName);
         else
             HazardBridge.Say(Plain(title) + " made safe, but late. Find and fix hazards in the pre-work check, before the job starts.");
+    }
+
+    // ---------- after the pre-work check ----------
+
+    GameObject reviewFx;
+
+    // Time is up and this hazard was missed: flash it so the trainee can find it and learn the risk.
+    public void BeginReview()
+    {
+        if (Controlled || reviewFx != null) return;
+        reviewFx = new GameObject("MissedHazardFlash");
+        reviewFx.transform.SetParent(transform, false);
+        var col = GetComponentInChildren<Collider>();
+        Vector3 centre = col != null && col.enabled ? col.bounds.center : transform.position;
+        reviewFx.transform.position = centre + Vector3.up * 0.45f;
+        var light = reviewFx.AddComponent<Light>();
+        light.type = LightType.Point;
+        light.color = new Color(1f, 0.25f, 0.1f);
+        light.range = 2.2f;
+        light.shadows = LightShadows.None;
+        reviewFx.AddComponent<HazardFlash>();
+        if (callout != null) callout.ShowMissed(level, title, risk, control);
+        Sfx.PlayAt(Sfx.Alert, centre, 0.8f);
+    }
+
+    public void EndReview()
+    {
+        if (reviewFx != null) Destroy(reviewFx);
+        reviewFx = null;
+    }
+
+    // Missed hazard: made safe for the trainee (does NOT count as found).
+    public void AutoMakeSafe(bool silent)
+    {
+        if (Controlled) return;
+        Spotted = true;
+        Controlled = true;
+        MadeSafeForYou = true;
+        if (marker != null) marker.SetActive(!hideMarkerWhenControlled);
+        ForceControlsSafe();
+        if (!silent)
+        {
+            if (callout != null) callout.ShowMadeSafeForYou(controlledText);
+            Sfx.PlayAt(Sfx.Chime, transform.position, 0.5f, 0.8f);
+        }
+    }
+
+    // "Restart training": this hazard was found earlier, put it straight back in its safe state.
+    public void RestoreFound()
+    {
+        if (Controlled) return;
+        Spotted = true;
+        Controlled = true;
+        if (marker != null) marker.SetActive(!hideMarkerWhenControlled);
+        ForceControlsSafe();
+        if (disableCollidersWhenSpotted)
+            foreach (var c in GetComponentsInChildren<Collider>()) c.enabled = false;
+        if (ElectricalSafetyManager.Instance != null) ElectricalSafetyManager.Instance.HazardIdentified(hazardName);
+    }
+
+    void ForceControlsSafe()
+    {
+        foreach (var g in FindObjectsByType<HazardGrabbable>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            if (g.hazard == this) g.ForceSafe();
     }
 
     public void ReportProgress(string text)

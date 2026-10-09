@@ -53,6 +53,14 @@ public class LooseToolControl : HazardGrabbable
         else zoneHighlight.SetPropertyBlock(null);
     }
 
+    public override void ForceSafe()
+    {
+        if (Stored || trolleySeat == null) return;
+        if (held) ForceRelease();
+        Park(trolleySeat.position, trolleySeat.rotation);
+        Stored = true;
+    }
+
     IEnumerator CheckFloor()
     {
         yield return new WaitForSeconds(1.2f);
