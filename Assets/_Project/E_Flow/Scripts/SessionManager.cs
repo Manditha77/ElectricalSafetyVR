@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public enum SessionPhase { Briefing, Training, Result }
+public enum SessionPhase { Briefing, PreCheck, Training, Result }
 
 public class SessionManager : MonoBehaviour
 {
@@ -11,20 +11,28 @@ public class SessionManager : MonoBehaviour
 
     public static event Action<SessionPhase> PhaseChanged;
     public static event Action ScoreChanged;
+    public static event Action PreCheckTimedOut;
 
     public static readonly string[] DecisionKeys =
         { "PPE", "Hazards", "Isolate", "Lockout", "Verify", "Restore" };
 
-    [Tooltip("Tick in test scenes to skip the briefing.")]
+    [Tooltip("Tick in test scenes to skip straight to training.")]
     public bool autoStartForTesting;
     public int passMark = 5;
 
+    [Header("Pre-work check")]
+    public float preCheckSeconds = 120f;
+
     public SessionPhase Phase { get; private set; } = SessionPhase.Briefing;
     public bool IsRunning => Phase == SessionPhase.Training;
+    public bool IsPreCheck => Phase == SessionPhase.PreCheck;
     public float ElapsedSeconds { get; private set; }
+    public float PreCheckSecondsLeft { get; private set; }
+    public int PreCheckAttempts { get; private set; }
     public bool Completed { get; private set; }
     public bool Passed { get; private set; }
     public readonly List<string> UnsafeNotes = new List<string>();
+    public readonly List<string> PreCheckHistory = new List<string>();
 
     readonly Dictionary<string, bool> decisions = new Dictionary<string, bool>();
 
@@ -41,6 +49,42 @@ public class SessionManager : MonoBehaviour
     void Update()
     {
         if (IsRunning) ElapsedSeconds += Time.deltaTime;
+
+        if (IsPreCheck)
+        {
+            PreCheckSecondsLeft -= Time.deltaTime;
+            ElectricalSafetyManager m = ElectricalSafetyManager.Instance;
+            bool allDone = m != null && m.PpeWorn >= m.requiredPpeItems && m.HazardsFound >= m.TotalHazards;
+            if (PreCheckSecondsLeft <= 0f)
+            {
+                PreCheckSecondsLeft = 0f;
+                EndPreCheck();
+                PreCheckTimedOut?.Invoke();
+            }
+            else if (allDone)
+            {
+                EndPreCheck();
+            }
+        }
+    }
+
+    public void StartPreCheck()
+    {
+        if (Phase != SessionPhase.Briefing) return;
+        PreCheckAttempts++;
+        PreCheckSecondsLeft = preCheckSeconds;
+        Phase = SessionPhase.PreCheck;
+        PhaseChanged?.Invoke(Phase);
+    }
+
+    public void EndPreCheck()
+    {
+        if (!IsPreCheck) return;
+        ElectricalSafetyManager m = ElectricalSafetyManager.Instance;
+        PreCheckHistory.Add("Check " + PreCheckAttempts + ": PPE " + m.PpeWorn + " of " + m.requiredPpeItems +
+                            ", hazards " + m.HazardsFound + " of " + m.TotalHazards);
+        Phase = SessionPhase.Briefing;
+        PhaseChanged?.Invoke(Phase);
     }
 
     public void BeginTraining()
@@ -49,20 +93,19 @@ public class SessionManager : MonoBehaviour
         ElapsedSeconds = 0f;
         Phase = SessionPhase.Training;
         ElectricalSafetyManager.Instance.SetElectricalState(ElectricalState.Energised);
+        ElectricalSafetyManager.Instance.ScorePreCheck(PreCheckAttempts);
         PhaseChanged?.Invoke(Phase);
     }
 
     public void RegisterAction(string name, bool correct, string note = "")
     {
         if (!IsRunning) return;
-        // A mistake is never erased by doing the step correctly later.
         if (decisions.TryGetValue(name, out bool earlier) && !earlier) correct = false;
         decisions[name] = correct;
         if (!string.IsNullOrEmpty(note)) UnsafeNotes.Add(note);
         ScoreChanged?.Invoke();
     }
 
-    // null = the user never reached this decision.
     public bool? GetDecision(string name)
     {
         return decisions.TryGetValue(name, out bool value) ? value : (bool?)null;

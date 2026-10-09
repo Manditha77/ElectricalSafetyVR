@@ -3,6 +3,11 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
+// Merged: Member D (feature/electrical-safety-sanduni) + main (pre-work check flow).
+// - PPE + hazards are handled in the PRE-WORK CHECK phase; ScorePreCheck() records completion at training start.
+// - Member D's job rules are kept: lockout, verify, cover, fuse scenarios, wrong fuse / wrong tool,
+//   tools clear, PPE removed, 3-strike rule (maxUnsafeActions) and critical danger.
+// - Methods used by other scripts (Say, ProveTester, PreCheck, Running...) are kept so nothing breaks.
 public class ElectricalSafetyManager : MonoBehaviour
 {
     public static ElectricalSafetyManager Instance { get; private set; }
@@ -14,6 +19,8 @@ public class ElectricalSafetyManager : MonoBehaviour
     public int requiredPpeItems = 6;
     public int requiredHazards = 4;
     public int maxUnsafeActions = 3;
+    [Tooltip("If on, the voltage tester must be proven on the proving unit before a 0 V reading counts.")]
+    public bool requireProvenTester = false;
 
     public ElectricalState State { get; private set; }
         = ElectricalState.Energised;
@@ -21,14 +28,20 @@ public class ElectricalSafetyManager : MonoBehaviour
     public bool LockoutApplied { get; private set; }
     public bool CoverOpen { get; private set; }
     public bool ToolsClear { get; private set; }
+    public bool TesterProven { get; private set; }
 
     public int UnsafeCount { get; private set; }
     public int HazardsFound { get; private set; }
     public int PpeWorn { get; private set; }
+    public int TotalHazards { get; private set; }
+
+    public bool Running => SessionManager.Instance != null && SessionManager.Instance.IsRunning;
+    public bool PreCheck => SessionManager.Instance != null && SessionManager.Instance.IsPreCheck;
 
     bool ppeChecked;
     bool lockoutChecked;
     bool fuseRemoved;
+    bool preCheckScored;
 
     int liveAttempts;
     int legacyPpeSequence;
@@ -42,11 +55,8 @@ public class ElectricalSafetyManager : MonoBehaviour
     void Awake()
     {
         Instance = this;
+        TotalHazards = FindObjectsByType<Hazard>(FindObjectsSortMode.None).Length;
     }
-
-    bool Running =>
-        SessionManager.Instance != null &&
-        SessionManager.Instance.IsRunning;
 
     // ---------- ELECTRICAL STATE ----------
 
@@ -56,11 +66,12 @@ public class ElectricalSafetyManager : MonoBehaviour
         StateChanged?.Invoke(State);
     }
 
-    // ---------- PPE ----------
+    // ---------- PRE-WORK CHECK: PPE ----------
 
+    // Old callers (PpeLocker / PpeItem) that only pass "is it a required item".
     public void PpeItemWorn(bool isRequiredItem)
     {
-        if (!Running) return;
+        if (!PreCheck) return;
 
         if (!isRequiredItem)
         {
@@ -78,7 +89,7 @@ public class ElectricalSafetyManager : MonoBehaviour
 
     public void PpeItemWorn(string itemName, bool isRequiredItem)
     {
-        if (!Running) return;
+        if (!PreCheck) return;
 
         if (!isRequiredItem)
         {
@@ -126,34 +137,38 @@ public class ElectricalSafetyManager : MonoBehaviour
         }
     }
 
+    
     public void PpeItemRemoved(string itemName)
     {
-        if (!Running) return;
+        if (!wornPpeItems.Remove(itemName))
+            return;
 
-        if (wornPpeItems.Remove(itemName))
+        PpeWorn = wornPpeItems.Count;
+
+        if (Running)
         {
-            PpeWorn = wornPpeItems.Count;
-
             Unsafe(
                 "PPE",
                 "Warning! Required protective equipment has been removed. Put it back on before continuing.",
                 false
             );
         }
+        else if (PreCheck)
+        {
+            Info(
+                "PPE removed: " +
+                PpeWorn + " of " +
+                requiredPpeItems + " worn."
+            );
+        }
     }
 
-    // ---------- HAZARDS ----------
+    // ---------- PRE-WORK CHECK: HAZARDS ----------
 
     public void HazardIdentified(string hazardName)
     {
-        if (!Running) return;
-
-        CheckPpeOnce();
-
-        if (!Running) return;
-
-        if (string.IsNullOrWhiteSpace(hazardName))
-            return;
+        if (!PreCheck) return;
+        if (string.IsNullOrWhiteSpace(hazardName)) return;
 
         if (identifiedHazards.Contains(hazardName))
         {
@@ -161,121 +176,80 @@ public class ElectricalSafetyManager : MonoBehaviour
             return;
         }
 
-        if (HazardsFound >= requiredHazards)
-        {
-            Info("[GUIDANCE] All required hazards have been identified.");
-            return;
-        }
-
         identifiedHazards.Add(hazardName);
         HazardsFound = identifiedHazards.Count;
 
-        if (HazardsFound < requiredHazards)
+        // Main counts the hazard objects in the scene; fall back to the configured rule.
+        int hazardTarget = TotalHazards > 0 ? TotalHazards : requiredHazards;
+        if (HazardsFound < hazardTarget)
         {
             Info(
-                "[GUIDANCE] Hazard reported: " +
-                hazardName + " (" +
-                HazardsFound + " of " +
-                requiredHazards + "). " +
-                "Hazard inspection incomplete. Identify all " +
-                requiredHazards + " hazards."
+                "[GUIDANCE] Hazard reported: " + hazardName + " (" +
+                HazardsFound + " of " + hazardTarget + "). " +
+                "Hazard inspection incomplete. Identify all " + hazardTarget + " hazards."
             );
         }
         else
         {
             Info(
-                "All " + requiredHazards +
-                " hazards identified! Proceed to electrical isolation."
+                "All " + hazardTarget +
+                " hazards made safe! Finish your PPE, then start the training."
             );
         }
     }
 
-    // ---------- BREAKER ----------
+    // Called when training begins; PPE and hazards are scored once, not at restoration.
+    public void ScorePreCheck(int attempts)
+    {
+        if (preCheckScored || SessionManager.Instance == null) return;
+        preCheckScored = true;
+        ppeChecked = true;
+
+        if (PpeWorn >= requiredPpeItems)
+        {
+            Score("PPE", true);
+        }
+        else
+        {
+            Unsafe(
+                "PPE",
+                "You started the job wearing " + PpeWorn + " of " +
+                requiredPpeItems + " PPE items.",
+                false
+            );
+        }
+
+        bool enoughHazards = HazardsFound >= requiredHazards;
+        string note = enoughHazards ? "" :
+            "You made safe " + HazardsFound + " of " +
+            (TotalHazards > 0 ? TotalHazards : requiredHazards) +
+            " hazards before starting work.";
+        SessionManager.Instance.RegisterAction("Hazards", enoughHazards, note);
+
+        if (attempts == 0)
+            SessionManager.Instance.UnsafeNotes.Add(
+                "You started the job without a pre-work check."
+            );
+    }
+
+    // ---------- STAGE 1: ISOLATE ----------
 
     public bool TryIsolate()
     {
         if (!Running) return false;
-
         CheckPpeOnce();
-
         if (!Running) return false;
 
         if (LockoutApplied)
         {
-            Info("[GUIDANCE] The breaker is locked. Remove the tag first.");
+            Info("[GUIDANCE] The isolator is locked. Remove the tag first.");
             return false;
         }
 
-        if (HazardsFound < requiredHazards)
-        {
-            Unsafe(
-                "Hazards",
-                "Warning! Complete the hazard inspection before proceeding. " +
-                "You have identified " + HazardsFound +
-                " of " + requiredHazards + " hazards.",
-                false
-            );
-
-            if (!Running) return false;
-        }
-
+        // Hazards were already recorded by ScorePreCheck at the start.
         Score("Isolate", true);
-
         SetElectricalState(ElectricalState.Isolated);
-
-        Info("Supply switched off.");
-
-        return true;
-    }
-
-    public bool TryRestore()
-    {
-        if (!Running) return false;
-
-        if (LockoutApplied)
-        {
-            Info("[GUIDANCE] The breaker is locked out. Remove the tag first.");
-            return false;
-        }
-
-        if (CoverOpen)
-        {
-            Unsafe(
-                "Restore",
-                "CRITICAL DANGER! Power restored while the cover was open.",
-                true
-            );
-            return true;
-        }
-
-        if (State == ElectricalState.Repaired)
-        {
-            if (!ToolsClear)
-            {
-                Unsafe(
-                    "Restore",
-                    "Return the fuse puller to the rack before restoring power.",
-                    false
-                );
-                return false;
-            }
-
-            Score("Hazards", HazardsFound >= requiredHazards);
-            Score("Restore", true);
-
-            SetElectricalState(ElectricalState.Restored);
-
-            Info("Power restored successfully! Electrical maintenance completed.");
-
-            return true;
-        }
-
-        Info(
-            "[GUIDANCE] Power is back on but the repair is not finished. Isolate again."
-        );
-
-        SetElectricalState(ElectricalState.Energised);
-
+        Info("Workstation 2 isolated. Now apply your lock and DANGER tag.");
         return true;
     }
 
@@ -284,41 +258,29 @@ public class ElectricalSafetyManager : MonoBehaviour
         if (!Running) return;
 
         CheckPpeOnce();
-
         if (!Running) return;
 
-        Unsafe(
-            "Isolate",
-            "Wrong breaker! Check the job card for the correct electrical supply.",
-            false
-        );
+        Unsafe("Isolate", "Wrong isolator! W1 feeds Workstation 1. Check the job card: isolate W2.", false);
     }
 
-    // ---------- LOCKOUT ----------
+    // ---------- STAGE 2: LOCKOUT ----------
 
     public void SetLockout(bool applied)
     {
         LockoutApplied = applied;
-
         if (!Running) return;
 
         if (applied && State == ElectricalState.Energised)
         {
-            Info(
-                "[GUIDANCE] The tag is on, but the breaker is still ON. Remove the tag, switch off, then tag."
-            );
+            Info("[GUIDANCE] The tag is on, but the isolator is still ON. Remove the tag, switch off, then tag.");
         }
         else if (applied)
         {
-            Info("Lockout tag applied.");
+            Info("Lockout tag applied. Now prove the tester and test for dead.");
         }
         else if (CoverOpen)
         {
-            Unsafe(
-                "Lockout",
-                "Lockout tag removed while the cover was open.",
-                false
-            );
+            Unsafe("Lockout", "Lockout tag removed while the cover was open.", false);
         }
         else
         {
@@ -326,7 +288,14 @@ public class ElectricalSafetyManager : MonoBehaviour
         }
     }
 
-    // ---------- VOLTAGE TESTER ----------
+    // ---------- STAGE 3: PROVE + VERIFY ----------
+
+    public void ProveTester()
+    {
+        TesterProven = true;
+        if (Running)
+            Info("Tester proven on the proving unit. Now test Workstation 2 for dead.");
+    }
 
     public bool TryVerify()
     {
@@ -346,18 +315,20 @@ public class ElectricalSafetyManager : MonoBehaviour
         {
             if (!LockoutApplied)
             {
-                Info(
-                    "[GUIDANCE] Tester reads 0 V. Apply the lockout tag, then test again."
-                );
+                Info("[GUIDANCE] Tester reads 0 V. Apply the lockout tag, then test again.");
+                return true;
+            }
+
+            if (requireProvenTester && !TesterProven)
+            {
+                Info("[GUIDANCE] Tester reads 0 V, but prove the tester on the proving unit first, then test again.");
                 return true;
             }
 
             Score("Verify", true);
 
             SetElectricalState(ElectricalState.VerifiedSafe);
-
-            Info("Tester reads 0 V. Verified safe to work.");
-
+            Info("Tester reads 0 V. Verified safe to work. You may open the cover.");
             return true;
         }
 
@@ -366,7 +337,7 @@ public class ElectricalSafetyManager : MonoBehaviour
         return true;
     }
 
-    // ---------- EQUIPMENT COVER ----------
+    // ---------- STAGE 4: EQUIPMENT COVER ----------
 
     public bool TryOpenCover()
     {
@@ -393,18 +364,10 @@ public class ElectricalSafetyManager : MonoBehaviour
         {
             lockoutChecked = true;
 
-            if (LockoutApplied)
-            {
-                Score("Lockout", true);
-            }
+            if (LockoutApplied) Score("Lockout", true);
             else
             {
-                Unsafe(
-                    "Lockout",
-                    "You went to open the cover without a lockout tag on the breaker.",
-                    false
-                );
-
+                Unsafe("Lockout", "You went to open the cover without a lockout tag on the isolator.", false);
                 if (!Running) return false;
             }
         }
@@ -449,7 +412,6 @@ public class ElectricalSafetyManager : MonoBehaviour
     {
         if (!Running) return false;
 
-        // Scenario 2
         if (State != ElectricalState.VerifiedSafe)
         {
             Unsafe(
@@ -457,11 +419,9 @@ public class ElectricalSafetyManager : MonoBehaviour
                 "DANGER! Verify the absence of voltage before removing the fuse.",
                 false
             );
-
             return false;
         }
 
-        // Scenario 3
         if (!CoverOpen)
         {
             Unsafe(
@@ -469,25 +429,17 @@ public class ElectricalSafetyManager : MonoBehaviour
                 "Warning! Open the equipment cover safely before removing the fuse.",
                 false
             );
-
             return false;
         }
 
-        // Prevent removing the same fuse twice.
         if (fuseRemoved)
         {
-            Info(
-                "[GUIDANCE] The damaged fuse has already been removed."
-            );
-
+            Info("[GUIDANCE] The damaged fuse has already been removed.");
             return false;
         }
 
-        // Scenario 4
         fuseRemoved = true;
-
         Info("Damaged fuse removed. Fit the new fuse.");
-
         return true;
     }
 
@@ -498,71 +450,40 @@ public class ElectricalSafetyManager : MonoBehaviour
     {
         if (!Running) return;
 
-        // Scenario 6
         if (!fuseRemoved)
         {
-            Info(
-                "[GUIDANCE] Remove the damaged fuse before installing the replacement fuse."
-            );
-
+            Info("[GUIDANCE] Remove the damaged fuse before installing the replacement fuse.");
             return;
         }
 
-        // Voltage verification is mandatory.
         if (State != ElectricalState.VerifiedSafe)
         {
-            Unsafe(
-                "Verify",
-                "Warning! Verify the absence of voltage before replacing the fuse.",
-                false
-            );
-
+            Unsafe("Verify", "Warning! Verify the absence of voltage before replacing the fuse.", false);
             return;
         }
 
         if (!CoverOpen)
         {
-            Unsafe(
-                "Verify",
-                "Warning! Open the equipment cover before installing the replacement fuse.",
-                false
-            );
-
+            Unsafe("Verify", "Warning! Open the equipment cover before installing the replacement fuse.", false);
             return;
         }
 
-        // Scenario 5
         SetElectricalState(ElectricalState.Repaired);
-
-        Info(
-            "New fuse fitted. Close the cover, clear your tools, then restore the supply."
-        );
+        Info("New fuse fitted. Close the cover, clear your tools, then remove your lock and restore the supply.");
     }
 
-    // ---------- SCENARIO 7: WRONG FUSE ----------
+    // ---------- STAGE 5: WRONG FUSE / WRONG TOOL ----------
 
     public void WrongFuseSelected()
     {
         if (!Running) return;
-
-        Unsafe(
-            "Verify",
-            "Incorrect replacement fuse! Check the required fuse type and rating before installation.",
-            false
-        );
+        Unsafe("Verify", "Incorrect replacement fuse! Check the required fuse type and rating before installation.", false);
     }
-
-    // ---------- SCENARIO 7: WRONG TOOL ----------
 
     public void WrongToolSelected()
     {
         if (!Running) return;
-
-        Unsafe(
-            "Verify",
-            "Incorrect tool! Use the approved fuse puller to remove the damaged fuse.",
-            false
-        );
+        Unsafe("Verify", "Incorrect tool! Use the approved fuse puller to remove the damaged fuse.", false);
     }
 
     // ---------- TOOLS ----------
@@ -570,15 +491,51 @@ public class ElectricalSafetyManager : MonoBehaviour
     public void SetToolsClear(bool clear)
     {
         ToolsClear = clear;
-
         if (Running && clear)
-        {
             Info("Tools returned successfully.");
+    }
+
+    // ---------- STAGE 6: RESTORE ----------
+
+    public bool TryRestore()
+    {
+        if (!Running) return false;
+
+        if (LockoutApplied)
+        {
+            Info("[GUIDANCE] The isolator is locked out. Remove your tag first.");
+            return false;
         }
+
+        if (CoverOpen)
+        {
+            Unsafe("Restore", "CRITICAL DANGER! Power restored while the cover was open.", true);
+            return true;
+        }
+
+        if (State == ElectricalState.Repaired)
+        {
+            if (!ToolsClear)
+            {
+                Unsafe("Restore", "Return the fuse puller to the rack before restoring power.", false);
+                return false;
+            }
+
+            // Hazards were scored at pre-check; do not score them a second time here.
+            Score("Restore", true);
+            SetElectricalState(ElectricalState.Restored);
+            Info("Power restored successfully! Electrical maintenance completed. Workstation 2 is back in service.");
+            return true;
+        }
+
+        Info("[GUIDANCE] Power is back on but the repair is not finished. Isolate again.");
+        SetElectricalState(ElectricalState.Energised);
+        return true;
     }
 
     // ---------- SAFETY CHECKS ----------
 
+    // Fallback only: normally ScorePreCheck() has scored PPE when training starts.
     void CheckPpeOnce()
     {
         if (ppeChecked) return;
@@ -610,6 +567,9 @@ public class ElectricalSafetyManager : MonoBehaviour
 
     // ---------- HELPERS ----------
 
+    // Public message used by other scripts (hazards, HUD prompts).
+    public void Say(string text) => Info(text);
+
     void Score(string decision, bool correct)
     {
         SessionManager.Instance.RegisterAction(
@@ -625,7 +585,7 @@ public class ElectricalSafetyManager : MonoBehaviour
 
     void Unsafe(string decision, string text, bool critical)
     {
-        if (!Running) return;
+        if (!Running && !PreCheck) return;
 
         UnsafeCount++;
 
@@ -637,9 +597,7 @@ public class ElectricalSafetyManager : MonoBehaviour
 
         MessageRaised?.Invoke(text, true);
 
-        if (critical || UnsafeCount >= maxUnsafeActions)
-        {
+        if (Running && (critical || UnsafeCount >= maxUnsafeActions))
             SessionManager.Instance.EndSession(false);
-        }
     }
 }

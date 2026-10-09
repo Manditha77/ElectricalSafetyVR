@@ -1,6 +1,10 @@
 using TMPro;
 using UnityEditor;
 using UnityEngine;
+using UnityEditor.Events;
+using UnityEditor.SceneManagement;
+using UnityEngine.SceneManagement;
+using UnityEngine.XR.Interaction.Toolkit.Interactables;
 
 // Builds parts of the workshop inside the Workshop_Main prefab from the Tools menu.
 public static class WorkshopBuilder
@@ -74,7 +78,7 @@ public static class WorkshopBuilder
         Box(g, "Trunk_Ceiling3",    V(3.5125f, 2.975f, 0f),  V(0.825f, 0.05f, 0.05f), Trunking);
         Box(g, "Trunk_CeilingTurn", V(3.9f, 2.975f, -0.3f), V(0.05f, 0.05f, 0.65f), Trunking);
         Box(g, "Trunk_EastDrop",    V(3.9f, 2.2f, -0.6f),   V(0.05f, 1.6f, 0.05f),  Trunking);
-        Box(g, "Trunk_ToBoard",     V(3.9f, 1.4f, -0.35f),  V(0.05f, 0.05f, 0.55f), Trunking);
+        Box(g, "Trunk_ToBoard",     V(3.9f, 1.4f, -0.5f),   V(0.05f, 0.05f, 0.25f), Trunking);
 
         // Fire extinguisher on the south wall, right of the door
         Box(g, "Ext_Bracket", V(-1.5f, 1.0f, -2.985f),  V(0.16f, 0.05f, 0.03f), Metal);
@@ -110,9 +114,197 @@ public static class WorkshopBuilder
               V(-3.908f, 1.42f, 0.6f), -90f, new Vector2(0.55f, 0.6f), 0.5f, Color.black);
 
         // Yellow keep-clear box on the floor in front of the breaker board
-        Box(g, "KeepClear_Front", V(2.9f, 0.005f, 0.5f),  V(0.08f, 0.01f, 1.28f), Yellow);
-        Box(g, "KeepClear_Left",  V(3.4f, 0.005f, -0.1f), V(1.0f, 0.01f, 0.08f),  Yellow);
-        Box(g, "KeepClear_Right", V(3.4f, 0.005f, 1.1f),  V(1.0f, 0.01f, 0.08f),  Yellow);
+        Box(g, "KeepClear_Front", V(2.9f, 0.005f, 0.5f),  V(0.08f, 0.01f, 2.08f), Yellow);
+        Box(g, "KeepClear_Left",  V(3.4f, 0.005f, -0.5f), V(1.0f, 0.01f, 0.08f),  Yellow);
+        Box(g, "KeepClear_Right", V(3.4f, 0.005f, 1.5f),  V(1.0f, 0.01f, 0.08f),  Yellow);        
+    }
+
+    // ---------- 3. hazards (Member C's prefabs — agreed with her) ----------
+
+    const string HazardFolder = "Assets/_Project/C_Interactions/Prefabs";
+
+    [MenuItem("Tools/Workshop/Upgrade Hazards")]
+    static void MenuHazards()
+    {
+        UpgradeHazard("Hazard_Puddle",       true,  "CAUTION\nWET FLOOR",  V(0.45f, 0f, 0f));
+        UpgradeHazard("Hazard_DamagedCable", true,  "DANGER\nDO NOT USE",  V(-0.65f, 0f, 0f));
+        UpgradeHazard("Hazard_MetalTool",    false, "REMOVE\nTOOL",        V(-0.3f, 0f, 0f));
+        BuildOverloadedStrip();
+        Debug.Log("Workshop: hazards upgraded.");
+    }
+
+    static void UpgradeHazard(string name, bool floorSign, string text, Vector3 markerOffset)
+    {
+        string path = HazardFolder + "/" + name + ".prefab";
+        GameObject root = PrefabUtility.LoadPrefabContents(path);
+        try
+        {
+            // Stray mesh on the root (shows as a pink duplicate)
+            MeshRenderer stray = root.GetComponent<MeshRenderer>();
+            if (stray != null) Object.DestroyImmediate(stray);
+            MeshFilter strayFilter = root.GetComponent<MeshFilter>();
+            if (strayFilter != null) Object.DestroyImmediate(strayFilter);
+
+            // Old flashing alarm marker and any earlier sign from this script
+            foreach (string old in new[] { "WarningLight", "ReportedSign", "ReportedTag" })
+            {
+                Transform t = root.transform.Find(old);
+                if (t != null) Object.DestroyImmediate(t.gameObject);
+            }
+
+            GameObject marker = floorSign ? FloorSign(root.transform, text, markerOffset)
+                                          : HangTag(root.transform, text, markerOffset);
+            root.GetComponent<Hazard>().marker = marker;
+            marker.SetActive(false);
+
+            PrefabUtility.SaveAsPrefabAsset(root, path);
+        }
+        finally
+        {
+            PrefabUtility.UnloadPrefabContents(root);
+        }
+    }
+
+    // The fourth hazard from the guide: a power strip with too many plugs and an adapter stacked on it.
+    static void BuildOverloadedStrip()
+    {
+        string path = HazardFolder + "/Hazard_OverloadedStrip.prefab";
+        Scene preview = EditorSceneManager.NewPreviewScene();
+        try
+        {
+            GameObject root = new GameObject("Hazard_OverloadedStrip");
+            SceneManager.MoveGameObjectToScene(root, preview);
+            Transform t = root.transform;
+            Material plastic = Mat("Mat_PlasticWhite", new Color32(225, 225, 220, 255), 0.4f, false);
+
+            Box(t, "Strip_Body", V(0f, 0.02f, 0f),     V(0.36f, 0.04f, 0.07f),  plastic);
+            Box(t, "Strip_Lead", V(-0.43f, 0.01f, 0f), V(0.5f, 0.012f, 0.012f), plastic);
+            for (int i = 0; i < 4; i++)
+            {
+                float x = -0.135f + i * 0.09f;
+                Box(t, "Plug",  V(x, 0.065f, 0f),   V(0.045f, 0.05f, 0.04f),  Black);
+                Box(t, "Cable", V(x, 0.01f, 0.23f), V(0.012f, 0.012f, 0.4f),  Black);
+            }
+            Box(t, "Adapter",       V(0.135f, 0.115f, 0f), V(0.06f, 0.05f, 0.05f),    plastic);
+            Box(t, "Adapter_Plug1", V(0.115f, 0.16f, 0f),  V(0.035f, 0.04f, 0.035f),  Black);
+            Box(t, "Adapter_Plug2", V(0.16f, 0.16f, 0f),   V(0.035f, 0.04f, 0.035f),  Black);
+            Box(t, "Scorch_Mark",   V(-0.135f, 0.041f, 0.025f), V(0.05f, 0.002f, 0.02f), Black);
+
+            BoxCollider col = root.AddComponent<BoxCollider>();
+            col.center = V(0f, 0.09f, 0.2f);
+            col.size = V(0.5f, 0.18f, 0.5f);
+
+            XRSimpleInteractable simple = root.AddComponent<XRSimpleInteractable>();
+            Hazard hazard = root.AddComponent<Hazard>();
+            hazard.hazardName = "Overloaded power strip";
+            hazard.marker = HangTag(t, "DANGER\nDO NOT USE", V(0.3f, 0f, 0f));
+            hazard.marker.SetActive(false);
+            UnityEventTools.AddVoidPersistentListener(simple.selectEntered, hazard.Identify);
+
+            PrefabUtility.SaveAsPrefabAsset(root, path);
+        }
+        finally
+        {
+            EditorSceneManager.ClosePreviewScene(preview);
+        }
+    }
+
+    // Yellow floor-stand sign, readable from both sides.
+    static GameObject FloorSign(Transform parent, string text, Vector3 offset)
+    {
+        GameObject g = new GameObject("ReportedSign");
+        g.transform.SetParent(parent, false);
+        g.transform.localPosition = offset;
+        Transform t = g.transform;
+
+        Box(t, "Base",  V(0f, 0.015f, 0f), V(0.3f, 0.03f, 0.2f),   Black);
+        Box(t, "Post",  V(0f, 0.22f, 0f),  V(0.03f, 0.4f, 0.03f),  Steel);
+        Box(t, "Board", V(0f, 0.55f, 0f),  V(0.35f, 0.3f, 0.01f),  Yellow);
+        Label(t, "Text_Front", text, V(0f, 0.55f, -0.006f), 0f,   new Vector2(0.33f, 0.28f), 0.5f, Color.black);
+        Label(t, "Text_Back",  text, V(0f, 0.55f, 0.006f),  180f, new Vector2(0.33f, 0.28f), 0.5f, Color.black);
+        return g;
+    }
+
+    // Small red tag that stands next to an item on a bench, readable from both sides.
+    static GameObject HangTag(Transform parent, string text, Vector3 offset)
+    {
+        GameObject g = new GameObject("ReportedTag");
+        g.transform.SetParent(parent, false);
+        g.transform.localPosition = offset;
+        Transform t = g.transform;
+
+        Box(t, "Base", V(0f, 0.005f, 0f), V(0.1f, 0.01f, 0.05f),   Black);
+        Box(t, "Card", V(0f, 0.08f, 0f),  V(0.18f, 0.13f, 0.005f), Red);
+        Label(t, "Text_Front", text, V(0f, 0.08f, -0.004f), 0f,   new Vector2(0.17f, 0.12f), 0.3f, Color.white);
+        Label(t, "Text_Back",  text, V(0f, 0.08f, 0.004f),  180f, new Vector2(0.17f, 0.12f), 0.3f, Color.white);
+        return g;
+    }
+
+        // ---------- 4. natural puddle shape ----------
+
+    [MenuItem("Tools/Workshop/Reshape Puddle")]
+    static void MenuPuddle()
+    {
+        string path = HazardFolder + "/Hazard_Puddle.prefab";
+        GameObject root = PrefabUtility.LoadPrefabContents(path);
+        try
+        {
+            Transform old = root.transform.Find("Visual");
+            if (old != null) Object.DestroyImmediate(old.gameObject);
+
+            Transform g = new GameObject("Visual").transform;
+            g.SetParent(root.transform, false);
+            Material wet = Mat("Mat_WetFloor", new Color32(38, 44, 50, 255), 0.95f, false);
+
+            //      x       z      width  depth  turn
+            // thin trickle from the bottle neck
+            Blob(g, -0.40f,  0.00f, 0.06f, 0.05f,   0f, wet);
+            Blob(g, -0.33f,  0.01f, 0.11f, 0.08f,  20f, wet);
+            Blob(g, -0.24f,  0.00f, 0.16f, 0.11f, -15f, wet);
+            // main pool
+            Blob(g, -0.10f,  0.03f, 0.30f, 0.22f,  10f, wet);
+            Blob(g,  0.08f, -0.03f, 0.40f, 0.28f, -25f, wet);
+            Blob(g,  0.24f,  0.07f, 0.26f, 0.19f,  35f, wet);
+            Blob(g,  0.16f, -0.17f, 0.20f, 0.13f,  60f, wet);
+            Blob(g, -0.02f,  0.16f, 0.18f, 0.10f, -40f, wet);
+            // uneven edges
+            Blob(g,  0.38f,  0.13f, 0.13f, 0.08f,  15f, wet);
+            Blob(g,  0.44f, -0.07f, 0.09f, 0.06f, -30f, wet);
+            Blob(g,  0.33f, -0.22f, 0.07f, 0.05f,   0f, wet);
+            // separate drops
+            Blob(g,  0.52f,  0.05f, 0.04f, 0.035f,  0f, wet);
+            Blob(g,  0.05f,  0.26f, 0.05f, 0.04f,   0f, wet);
+            Blob(g, -0.22f, -0.14f, 0.06f, 0.045f,  0f, wet);
+            Blob(g,  0.58f, -0.14f, 0.03f, 0.025f,  0f, wet);
+
+            // Make the selectable area cover the whole spill
+            BoxCollider col = root.GetComponent<BoxCollider>();
+            if (col != null)
+            {
+                col.center = V(-0.1f, 0.1f, 0f);
+                col.size = V(1.3f, 0.2f, 0.8f);
+            }
+
+            PrefabUtility.SaveAsPrefabAsset(root, path);
+            Debug.Log("Workshop: puddle reshaped.");
+        }
+        finally
+        {
+            PrefabUtility.UnloadPrefabContents(root);
+        }
+    }
+
+    // One flat oval of water lying on the floor.
+    static void Blob(Transform parent, float x, float z, float width, float depth, float turn, Material mat)
+    {
+        GameObject go = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+        go.name = "Water";
+        go.transform.SetParent(parent, false);
+        go.transform.localPosition = V(x, 0.002f, z);
+        go.transform.localRotation = Quaternion.Euler(0f, turn, 0f);
+        go.transform.localScale = V(width, 0.002f, depth);
+        go.GetComponent<Renderer>().sharedMaterial = mat;
+        Object.DestroyImmediate(go.GetComponent<Collider>());
     }
 
     // ---------- helpers ----------
