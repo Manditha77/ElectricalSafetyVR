@@ -19,6 +19,30 @@ public class TrainingFlow : MonoBehaviour
     void OnEnable()  { SessionManager.PhaseChanged += Refresh; }
     void OnDisable() { SessionManager.PhaseChanged -= Refresh; }
 
+    void Update()
+    {
+        if (hazards == null) return;
+
+        SessionManager session = SessionManager.Instance;
+        bool allowHazards = session != null &&
+                            session.IsPreCheck &&
+                            HazardBridge.PpeComplete;
+
+        foreach (Hazard hazard in hazards)
+        {
+            if (hazard == null) continue;
+
+            XRSimpleInteractable interactable =
+                hazard.GetComponent<XRSimpleInteractable>();
+
+            if (interactable != null &&
+                interactable.enabled != allowHazards)
+            {
+                interactable.enabled = allowHazards;
+            }
+        }
+    }
+
     void Start()
     {
         ppeItems = FindObjectsByType<PpeItem>(FindObjectsSortMode.None);
@@ -48,7 +72,8 @@ public class TrainingFlow : MonoBehaviour
         {
             if (hazard == null) continue;
             XRSimpleInteractable select = hazard.GetComponent<XRSimpleInteractable>();
-            if (select != null) select.enabled = checking;
+            if (select != null)
+                select.enabled = checking && HazardBridge.PpeComplete;
         }
         foreach (TrainingTool tool in tools)
         {
