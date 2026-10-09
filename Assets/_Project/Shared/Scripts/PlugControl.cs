@@ -11,23 +11,49 @@ public class PlugControl : HazardGrabbable
     public float leadLength = 1.5f;
     public float pullOut = 0.06f;
     public Renderer socketIndicator; // red "ON" neon on the socket
+    public bool zapWhenLive = false;  // small arc when a live damaged lead is pulled out
+
+    [Header("Using a socket/cable model")]
+    [Tooltip("Model parts shown while plugged in (e.g. the model's own plug). Hidden when unplugged.")]
+    public GameObject[] modelWhilePlugged;
+    [Tooltip("Our plug's own meshes: hidden while the model's plug is shown, shown once unplugged.")]
+    public Renderer[] ownVisuals;
 
     public bool Plugged { get; private set; } = true;
 
     void Start()
     {
         if (seat != null) Park(seat.position, seat.rotation);
+        ShowOwn(!HasModel);
     }
 
+    bool HasModel
+    {
+        get
+        {
+            if (modelWhilePlugged == null) return false;
+            foreach (var g in modelWhilePlugged) if (g != null) return true;
+            return false;
+        }
+    }
+
+    void ShowOwn(bool show)
+    {
+        if (ownVisuals != null) foreach (var r in ownVisuals) if (r != null) r.enabled = show;
+        if (lead != null) lead.enabled = show;
+    }
+
+    // Pressing grip on the plug pulls it out straight away (reliable with the simulator ray).
     protected override void OnGrab()
     {
         if (hazard != null && !hazard.Spotted) hazard.Spot();
+        if (Plugged) Unplug();
     }
 
     protected override void Update()
     {
         base.Update();
-        if (seat == null || !HazardBridge.Active) return;
+        if (seat == null) return;
 
         if (held && Plugged && Vector3.Distance(transform.position, seat.position) > pullOut)
             Unplug();
@@ -42,7 +68,13 @@ public class PlugControl : HazardGrabbable
     {
         Plugged = false;
         Sfx.PlayAt(Sfx.Click, seat.position, 0.9f);
+        if (zapWhenLive) Sfx.PlayAt(Sfx.Zap, seat.position, 0.7f);
         if (socketIndicator != null) socketIndicator.enabled = false;
+        if (HasModel)
+        {
+            foreach (var g in modelWhilePlugged) if (g != null) g.SetActive(false);
+            ShowOwn(true);
+        }
         if (hazard != null) hazard.Identify();
     }
 

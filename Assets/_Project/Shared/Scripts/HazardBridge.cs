@@ -65,28 +65,7 @@ public static class HazardBridge
 
     public static bool InPreCheck => Phase == "PreCheck";
     public static bool InTraining => Phase == "Training";
-    //public static bool Active { get { var p = Phase; return p == "PreCheck" || p == "Training"; } }
-
-    public static bool PpeComplete
-    {
-        get
-        {
-            var manager = ElectricalSafetyManager.Instance;
-            return manager != null &&
-                   manager.PpeWorn >= manager.requiredPpeItems;
-        }
-    }
-
-    public static bool Active
-    {
-        get
-        {
-            var phase = Phase;
-
-            return phase == "Training" ||
-                   (phase == "PreCheck" && PpeComplete);
-        }
-    }
+    public static bool Active { get { var p = Phase; return p == "PreCheck" || p == "Training"; } }
 
     // "Energised", "Isolated", "VerifiedSafe", "Repaired", "Restored"
     public static string State
@@ -152,12 +131,41 @@ public static class HazardBridge
         {
             if (m.Name != "RegisterAction") continue;
             var ps = m.GetParameters();
+            // RegisterAction(string decision, bool correct[, string note])
+            if (ps.Length >= 2 && ps[0].ParameterType == typeof(string) && ps[1].ParameterType == typeof(bool))
+            {
+                var args = new object[ps.Length];
+                args[0] = decision; args[1] = false;
+                for (int i = 2; i < ps.Length; i++)
+                    args[i] = ps[i].ParameterType == typeof(string) ? "" : (ps[i].HasDefaultValue ? ps[i].DefaultValue : null);
+                m.Invoke(s, args);
+                return;
+            }
             if (ps.Length == 2 && ps[0].ParameterType.IsEnum && ps[1].ParameterType == typeof(bool)
                 && Enum.IsDefined(ps[0].ParameterType, decision))
             {
                 m.Invoke(s, new object[] { Enum.Parse(ps[0].ParameterType, decision), false });
                 return;
             }
+        }
+    }
+
+
+    // True when all required PPE is worn (used by TrainingFlow).
+    public static bool PpeComplete
+    {
+        get
+        {
+            var e = ElectricalSafetyManager.Instance;
+            if (e == null) return false;
+            int required = 5;
+            foreach (var owner in new object[] { e, SessionManager.Instance })
+            {
+                if (owner == null) continue;
+                var m = Find(owner.GetType(), "requiredPpeItems", "RequiredPpeItems", "requiredPpe", "RequiredPpe");
+                if (m != null && Get(m, owner) is int r) { required = r; break; }
+            }
+            return e.PpeWorn >= required;
         }
     }
 

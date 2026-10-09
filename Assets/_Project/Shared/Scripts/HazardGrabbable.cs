@@ -18,8 +18,16 @@ public abstract class HazardGrabbable : MonoBehaviour
 
     public bool IsHeld => held;
 
+    // Name used to find the hazard if the reference was lost (e.g. after a scene merge).
+    protected virtual string HazardKey => name;
+
     protected virtual void Awake()
     {
+        if (hazard == null && !string.IsNullOrEmpty(HazardKey))
+        {
+            hazard = Hazard.Find(HazardKey);
+            if (hazard != null) Debug.LogWarning("[Hazard] " + name + ": hazard link was missing, re-linked to " + hazard.name);
+        }
         rb = GetComponent<Rigidbody>();
         grab = GetComponent<XRGrabInteractable>();
         homePos = transform.position;
@@ -57,7 +65,8 @@ public abstract class HazardGrabbable : MonoBehaviour
     {
         if (grab != null && !held)
         {
-            bool on = HazardBridge.Active;
+            // same rule as TrainingFlow: in the pre-work check, PPE first, then hazards
+            bool on = HazardBridge.Active && (this is TorchControl || !HazardBridge.InPreCheck || HazardBridge.PpeComplete);
             if (grab.enabled != on) grab.enabled = on;
         }
         if (transform.position.y < -2f) ReturnHome();

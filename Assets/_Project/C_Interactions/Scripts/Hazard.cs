@@ -38,8 +38,42 @@ public class Hazard : MonoBehaviour
     void OnEnable() { if (!All.Contains(this)) All.Add(this); }
     void OnDisable() { All.Remove(this); }
 
+    // name keys: hazard object name part  <->  matching control / callout name part
+    static readonly string[][] Keys =
+    {
+        new[] { "Puddle", "WetFloor", "Spill", "Mop", "Bottle" },
+        new[] { "DamagedCable", "DamagedLead" },
+        new[] { "OverloadedStrip", "PowerStrip" },
+        new[] { "MetalTool", "LooseTool", "Spanner" },
+    };
+
+    public bool MatchesKey(string other)
+    {
+        foreach (var set in Keys)
+        {
+            if (!name.Contains(set[0])) continue;
+            foreach (var k in set) if (other.Contains(k)) return true;
+        }
+        return false;
+    }
+
+    // Finds the hazard that belongs to a control / callout / consequence by its name.
+    public static Hazard Find(string otherName)
+    {
+        if (string.IsNullOrEmpty(otherName)) return null;
+        foreach (var h in FindObjectsByType<Hazard>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            if (h.MatchesKey(otherName)) return h;
+        return null;
+    }
+
     void Awake()
     {
+        if (callout == null)
+        {
+            foreach (var c in FindObjectsByType<HazardCallout>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+                if (MatchesKey(c.name)) { callout = c; Debug.LogWarning("[Hazard] " + name + ": callout was missing, re-linked to " + c.name); break; }
+        }
+
         var simple = GetComponent<XRSimpleInteractable>();
         if (simple != null) simple.selectEntered.AddListener(OnSelected);
     }
