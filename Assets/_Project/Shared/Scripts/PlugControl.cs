@@ -27,7 +27,7 @@ public class PlugControl : HazardGrabbable
     protected override void Update()
     {
         base.Update();
-        if (seat == null) return;
+        if (seat == null || !HazardBridge.Active) return;
 
         if (held && Plugged && Vector3.Distance(transform.position, seat.position) > pullOut)
             Unplug();
