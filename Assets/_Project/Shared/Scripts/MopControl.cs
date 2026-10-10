@@ -81,9 +81,13 @@ public class MopControl : HazardGrabbable
         }
 
         Vector3 h = head.position;
-        bool over = h.x > area.min.x - wipeRadius && h.x < area.max.x + wipeRadius &&
-                    h.z > area.min.z - wipeRadius && h.z < area.max.z + wipeRadius &&
-                    h.y < area.max.y + reach;
+        bool over =
+            h.x > area.min.x - wipeRadius &&
+            h.x < area.max.x + wipeRadius &&
+            h.z > area.min.z - wipeRadius &&
+            h.z < area.max.z + wipeRadius &&
+            h.y >= area.min.y - 0.05f &&
+            h.y <= area.max.y + reach;
         if (!over) { hasLast = false; return; }
 
         if (!hazard.Spotted) hazard.Spot();
