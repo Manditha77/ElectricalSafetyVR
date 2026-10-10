@@ -1,93 +1,57 @@
 # Asset licences
 
-Every outside asset used by the build. Scanned 2026-10-10 03:52 with *Tools > Workshop > Credits > 1. Scan Third-Party Assets*.
-Fill every `[ ]` cell from the asset's own page, then scan again: typed Source / Author / Licence cells are kept.
-CREDITS.md (repo root) and the in-game CREDITS board are made from this table.
+Every outside asset used by the build, with its source, creator and licence.
+First scanned with *Tools > Workshop > Credits > 1. Scan Third-Party Assets*, then completed by the team (10 Oct 2026).
+Re-running the scan keeps every filled Source / Author / Licence cell. CREDITS.md (repo root) and the in-game CREDITS board are made from this table.
 
 ## Used in the build
 
 | Asset | Type | Source | Author | Licence | Where it is used | Files |
 | --- | --- | --- | --- | --- | --- | --- |
-| Barrel 03 (Poly Haven) | HDRI, model, texture | https://polyhaven.com/a/barrel_03 | [author on the Poly Haven page] | CC0 1.0 | Workshop_Main | `Assets/_Project/B_Environment/ThirdParty/PolyHaven/barrel_03_1k.fbx/barrel_03_1k.fbx`<br>`Assets/_Project/B_Environment/ThirdParty/PolyHaven/barrel_03_1k.fbx/textures/barrel_03_diff_1k.jpg`<br>`Assets/_Project/B_Environment/ThirdParty/PolyHaven/barrel_03_1k.fbx/textures/barrel_03_nor_gl_1k.exr` |
-| Ceiling Interior (Poly Haven) | texture | https://polyhaven.com/a/ceiling_interior | [author on the Poly Haven page] | CC0 1.0 | Mat_Ceiling | `Assets/_Project/B_Environment/ThirdParty/PolyHaven/ceiling_interior_diff_1k.jpg`<br>`Assets/_Project/B_Environment/ThirdParty/PolyHaven/ceiling_interior_nor_gl_1k.jpg` |
-| Cheesebox 01 (Poly Haven) | HDRI, model, texture | https://polyhaven.com/a/cheesebox_01 | [author on the Poly Haven page] | CC0 1.0 | Workshop_Main | `Assets/_Project/B_Environment/ThirdParty/PolyHaven/CheeseBox_01_1k.fbx/CheeseBox_01_1k.fbx`<br>`Assets/_Project/B_Environment/ThirdParty/PolyHaven/CheeseBox_01_1k.fbx/textures/CheeseBox_01_diff_1k.jpg`<br>`Assets/_Project/B_Environment/ThirdParty/PolyHaven/CheeseBox_01_1k.fbx/textures/CheeseBox_01_nor_gl_1k.exr` |
-| Concrete Wall 009 (Poly Haven) | texture | https://polyhaven.com/a/concrete_wall_009 | [author on the Poly Haven page] | CC0 1.0 | Mat_Wall | `Assets/_Project/B_Environment/ThirdParty/PolyHaven/concrete_wall_009_diff_1k.jpg`<br>`Assets/_Project/B_Environment/ThirdParty/PolyHaven/concrete_wall_009_nor_gl_1k.jpg` |
-| Gravel Concrete (Poly Haven) | texture | https://polyhaven.com/a/gravel_concrete | [author on the Poly Haven page] | CC0 1.0 | Mat_Floor | `Assets/_Project/B_Environment/ThirdParty/PolyHaven/gravel_concrete_diff_1k.jpg`<br>`Assets/_Project/B_Environment/ThirdParty/PolyHaven/gravel_concrete_nor_gl_1k.jpg` |
-| Metal Toolbox (Poly Haven) | HDRI, model, texture | https://polyhaven.com/a/metal_toolbox | [author on the Poly Haven page] | CC0 1.0 | Workshop_Main | `Assets/_Project/B_Environment/ThirdParty/PolyHaven/metal_toolbox_1k.fbx/metal_toolbox_1k.fbx`<br>`Assets/_Project/B_Environment/ThirdParty/PolyHaven/metal_toolbox_1k.fbx/textures/metal_toolbox_diff_1k.jpg`<br>`Assets/_Project/B_Environment/ThirdParty/PolyHaven/metal_toolbox_1k.fbx/textures/metal_toolbox_nor_gl_1k.exr` |
-| Painted Wooden Stool (Poly Haven) | HDRI, model, texture | https://polyhaven.com/a/painted_wooden_stool | [author on the Poly Haven page] | CC0 1.0 | Workshop_Main | `Assets/_Project/B_Environment/ThirdParty/PolyHaven/painted_wooden_stool_1k.fbx/painted_wooden_stool_1k.fbx`<br>`Assets/_Project/B_Environment/ThirdParty/PolyHaven/painted_wooden_stool_1k.fbx/textures/painted_wooden_stool_diff_1k.jpg`<br>`Assets/_Project/B_Environment/ThirdParty/PolyHaven/painted_wooden_stool_1k.fbx/textures/painted_wooden_stool_nor_gl_1k.exr` |
-| Power Box 01 (Poly Haven) | HDRI, model, texture | https://polyhaven.com/a/power_box_01 | [author on the Poly Haven page] | CC0 1.0 | BreakerPanel, Workshop_Main | `Assets/_Project/B_Environment/ThirdParty/PolyHaven/power_box_01_1k.fbx/power_box_01_1k.fbx`<br>`Assets/_Project/B_Environment/ThirdParty/PolyHaven/power_box_01_1k.fbx/textures/power_box_01_diff_1k.jpg`<br>`Assets/_Project/B_Environment/ThirdParty/PolyHaven/power_box_01_1k.fbx/textures/power_box_01_nor_gl_1k.exr` |
-| AdventureForge | model, texture | [link: Asset Store / Kenney / Quaternius / Sketchfab page] | [author / publisher] | [CC0 / CC BY 4.0 / Standard Unity Asset Store EULA] | MatalCabinetShelfMA512, MetalCabientCornersupportMA512, MetalCabinetOpen02 +1 | `Assets/AdventureForge/Geometry/Industrial Cabinets and Shelves/MetalCabinet01/MetalCabinetOpen02.fbx`<br>`Assets/AdventureForge/Texture/Industrial Cabinets and Shelves/MetalCabinet01/CleanRed/512/MatalCabinetShelfMA_CleanRed_Albedo.tif`<br>`Assets/AdventureForge/Texture/Industrial Cabinets and Shelves/MetalCabinet01/CleanRed/512/MatalCabinetShelfMA_CleanRed_AO.tif`<br>+6 more<br>licence file: `Assets/AdventureForge/CabinetsAndShelvesReadme.txt` |
-| Assem1_LR01.obj | model | [team-made? or download link] | [author, or 'Team'] | [licence, or 'Team-made'] | Hazard_MetalTool | `Assets/_Project/C_Interactions/Models/Assem1_LR01.obj` |
-| Bottle of water.fbx | model | [team-made? or download link] | [author, or 'Team'] | [licence, or 'Team-made'] | Hazard_Puddle | `Assets/_Project/C_Interactions/Models/Bottle of water.fbx` |
-| Locker.obj | model | [team-made? or download link] | [author, or 'Team'] | [licence, or 'Team-made'] | MetalCabinetOpen02 | `Assets/_Project/C_Interactions/Models/Locker.obj` |
-| PC-Cable.fbx | model | [team-made? or download link] | [author, or 'Team'] | [licence, or 'Team-made'] | Hazard_DamagedCable | `Assets/_Project/C_Interactions/Models/PC-Cable.fbx` |
-| PPE Voice.mp3 | audio | [team-made? or download link] | [author, or 'Team'] | [licence, or 'Team-made'] | scene | `Assets/_Project/E_Flow/PPE Voice.mp3` |
-| PPEModels | model | [link: Asset Store / Kenney / Quaternius / Sketchfab page] | [author / publisher] | [CC0 / CC BY 4.0 / Standard Unity Asset Store EULA] | MetalCabinetOpen02 | `Assets/PPEModels/boots.fbx`<br>`Assets/PPEModels/EarSafety.obj`<br>`Assets/PPEModels/Glove.fbx`<br>+1 more |
-| TimeOverVoice.mp3 | audio | [team-made? or download link] | [author, or 'Team'] | [licence, or 'Team-made'] | scene | `Assets/_Project/E_Flow/TimeOverVoice.mp3` |
-| voicebosch-quotwarningquot-175692.mp3 | audio | [team-made? or download link] | [author, or 'Team'] | [licence, or 'Team-made'] | BreakerPanel | `Assets/_Project/C_Interactions/Audio/voicebosch-quotwarningquot-175692.mp3` |
-| Liberation Sans font (TextMesh Pro default) | font | https://github.com/liberationfonts/liberation-fonts | Liberation Fonts project (Red Hat) | SIL Open Font License 1.1 | BreakerPanel, Hazard_DamagedCable, Hazard_MetalTool +5 | `Assets/TextMesh Pro/Fonts/LiberationSans.ttf`<br>`Assets/TextMesh Pro/Resources/Fonts & Materials/LiberationSans SDF - Fallback.asset`<br>`Assets/TextMesh Pro/Resources/Fonts & Materials/LiberationSans SDF.asset` |
-| Unity package com.unity.inputsystem | texture | Unity Package Manager | Unity Technologies | Unity Companion License | scene | `Packages/com.unity.inputsystem/InputSystem/Editor/Icons/TrackedPoseDriver@4x.png` |
-| Unity package com.unity.ugui | texture | Unity Package Manager | Unity Technologies | Unity Companion License | scene | `Packages/com.unity.ugui/Editor Resources/Gizmos/TMP - Font Asset Icon.psd`<br>`Packages/com.unity.ugui/Editor Resources/Gizmos/TMP - Text Component Icon.psd` |
-| XR Interaction Toolkit samples | model, texture | Unity Package Manager (package samples) | Unity Technologies | Unity Companion License | Blocking Teleport Reticle, Climb Teleport Arrow, Controller_Grey +5 | `Assets/Samples/XR Interaction Toolkit/3.5.1/Starter Assets/DemoAssets/Sprites/Forward.png`<br>`Assets/Samples/XR Interaction Toolkit/3.5.1/Starter Assets/DemoAssets/Sprites/LegibilityMask.png`<br>`Assets/Samples/XR Interaction Toolkit/3.5.1/Starter Assets/DemoAssets/Textures/Concrete_Normal.tif`<br>+35 more |
+| Barrel 03 (Poly Haven) | model, texture | https://polyhaven.com/a/barrel_03 | Poly Haven | CC0 1.0 | Workshop_Main | `Assets/_Project/B_Environment/ThirdParty/PolyHaven/barrel_03_1k.fbx/` |
+| Cheesebox 01 (Poly Haven) | model, texture | https://polyhaven.com/a/CheeseBox_01 | Poly Haven | CC0 1.0 | Workshop_Main | `Assets/_Project/B_Environment/ThirdParty/PolyHaven/CheeseBox_01_1k.fbx/` |
+| Metal Toolbox (Poly Haven) | model, texture | https://polyhaven.com/a/metal_toolbox | Poly Haven | CC0 1.0 | Workshop_Main | `Assets/_Project/B_Environment/ThirdParty/PolyHaven/metal_toolbox_1k.fbx/` |
+| Painted Wooden Stool (Poly Haven) | model, texture | https://polyhaven.com/a/painted_wooden_stool | Poly Haven | CC0 1.0 | Workshop_Main | `Assets/_Project/B_Environment/ThirdParty/PolyHaven/painted_wooden_stool_1k.fbx/` |
+| Power Box 01 (Poly Haven) | model, texture | https://polyhaven.com/a/power_box_01 | Poly Haven | CC0 1.0 | BreakerPanel, Workshop_Main | `Assets/_Project/B_Environment/ThirdParty/PolyHaven/power_box_01_1k.fbx/` |
+| Concrete Wall 009 (Poly Haven) | texture | https://polyhaven.com/a/concrete_wall_009 | Poly Haven | CC0 1.0 | Mat_Wall (walls) | `Assets/_Project/B_Environment/ThirdParty/PolyHaven/concrete_wall_009_*_1k.jpg` |
+| Gravel Concrete (Poly Haven) | texture | https://polyhaven.com/a/gravel_concrete | Poly Haven | CC0 1.0 | Mat_Floor (floor) | `Assets/_Project/B_Environment/ThirdParty/PolyHaven/gravel_concrete_*_1k.jpg` |
+| Ceiling Interior (Poly Haven) | texture | https://polyhaven.com/a/ceiling_interior | Poly Haven | CC0 1.0 | Mat_Ceiling (ceiling) | `Assets/_Project/B_Environment/ThirdParty/PolyHaven/ceiling_interior_*_1k.jpg` |
+| AdventureForge | model, texture | https://assetstore.unity.com/packages/3d/props/industrial/industrial-cabinets-and-shelves-lite-56126 | AF Adventure Forge | Standard Unity Asset Store EULA (https://unity.com/legal/as-terms) | PPE rack (MetalCabinetOpen02) | `Assets/AdventureForge/` (Industrial Cabinets and Shelves Lite) |
+| PPEModels | model | Poly Pizza / CGTrader (see PPE models below) | jeremy; Trubz; Quaternius; Isa Lousberg | CC BY 3.0; CGTrader Royalty Free (no AI); CC0 1.0; CC0 1.0 | PPE station | `Assets/PPEModels/` |
+| PC-Cable.fbx | model | https://sketchfab.com/3d-models/pc-cable-3567cb2ebd734c0c886c22f1c05b5632 | Plutonium.software | CC BY 4.0 | Hazard_DamagedCable | `Assets/_Project/C_Interactions/Models/PC-Cable.fbx` |
+| Bottle of water.fbx | model | https://sketchfab.com/3d-models/bottle-of-water-48fd4f6e90d84d89b5740ee78587d0ff | T-Art (@person-x) | CC BY 4.0 | Hazard_Puddle (spilled bottle) | `Assets/_Project/C_Interactions/Models/Bottle of water.fbx` |
+| Assem1_LR01.obj | model | https://sketchfab.com/3d-models/adjustable-spannerwrench-e13f98a9d7364510a65042d4c42e7a9c | CGWorker | CC BY 4.0 | Hazard_MetalTool (spanner) | `Assets/_Project/C_Interactions/Models/Assem1_LR01.obj` |
+| voicebosch-quotwarningquot-175692.mp3 | audio | https://pixabay.com/sound-effects/ (sound ID 175692) | voicebosch | Pixabay Content License | BreakerPanel ("warning" voice) | `Assets/_Project/C_Interactions/Audio/voicebosch-quotwarningquot-175692.mp3` |
+| PPE Voice.mp3 | audio | AI text-to-speech: [tool name] | Generated by the team | [tool's terms of use] | PPE instructions | `Assets/_Project/E_Flow/PPE Voice.mp3` |
+| TimeOverVoice.mp3 | audio | AI text-to-speech: [tool name] | Generated by the team | [tool's terms of use] | Hazard check time-out | `Assets/_Project/E_Flow/TimeOverVoice.mp3` |
+| Hazard voice clips | audio | AI text-to-speech: [tool name] | Generated by the team | [tool's terms of use] | Hazard callouts | `Assets/_Project/C_Interactions/Audio/Hazards/Hazard*.mp3` |
+| Liberation Sans font (TextMesh Pro default) | font | https://github.com/liberationfonts/liberation-fonts | Liberation Fonts project (Red Hat) | SIL Open Font License 1.1 | All in-world text | `Assets/TextMesh Pro/Fonts/LiberationSans.ttf` |
+| TextMesh Pro Essential Resources | font, texture | Unity Package Manager (com.unity.ugui) | Unity Technologies | Unity Companion License | All in-world text | `Assets/TextMesh Pro/` |
+| XR Interaction Toolkit samples | model, texture | Unity Package Manager (package samples) | Unity Technologies | Unity Companion License | Controllers, teleport reticles, XR Device Simulator | `Assets/Samples/XR Interaction Toolkit/3.5.1/` |
+| Unity package com.unity.inputsystem | texture | Unity Package Manager | Unity Technologies | Unity Companion License | Input actions | `Packages/com.unity.inputsystem` |
+| Unity package com.unity.ugui | texture | Unity Package Manager | Unity Technologies | Unity Companion License | UI | `Packages/com.unity.ugui` |
+
+### PPE models (detail of the PPEModels row)
+
+| Asset | File | Source | Creator | Licence |
+| --- | --- | --- | --- | --- |
+| Headphones (ear defenders) | `EarSafety.obj` (was `Headphones_01.obj`) | https://poly.pizza/m/frvTEfwm9Yg | jeremy | CC BY 3.0 (https://creativecommons.org/licenses/by/3.0/) |
+| Goggles 3D Model (safety goggles) | `SafetyGoggles.obj` | https://www.cgtrader.com/free-3d-models/various/various-models/goggles-3d-model | Trubz | CGTrader Royalty Free License (no AI) |
+| Glove (safety gloves) | `Glove.fbx` | https://poly.pizza/m/l1zv4LaA4I | Quaternius | CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/) |
+| Boots (safety boots) | `boots.fbx` | https://poly.pizza/m/7XCvej7wZU | Isa Lousberg | CC0 1.0 (https://creativecommons.org/publicdomain/zero/1.0/) |
 
 ## Made by the team (no licence needed)
 
-- Workshop room, hazards, spill kit, tool trolley, signs, boards and the Safe Isolation poster: built in Unity from primitives and TextMeshPro text.
+- Workshop room, hazards, spill kit, tool trolley, signs, boards, placement hints and the Safe Isolation poster: built in Unity from primitives and TextMeshPro text.
+- All sound effects other than the files listed above: generated in code at run time (Sfx.cs, no audio files).
 - Materials created in Unity (`Mat_*`) unless listed above.
+
+## AI tools used
+
+- Claude (Anthropic), https://claude.ai: build guide, script drafting and debugging. All output reviewed, integrated and tested by the team.
+- [Text-to-speech tool name]: voice clips listed above.
 
 ## In the project but not used by the build
 
-These are not shipped, so they need no credit in the game. Delete them, or credit them here if they stay in the repo.
-
-- `Assets/_Project/B_Environment/ThirdParty/PolyHaven/barrel_03_1k.fbx`
-- `Assets/_Project/B_Environment/ThirdParty/PolyHaven/barrel_03_1k.fbx/textures/barrel_03_metal_1k.exr`
-- `Assets/_Project/B_Environment/ThirdParty/PolyHaven/barrel_03_1k.fbx/textures/barrel_03_rough_1k.jpg`
-- `Assets/_Project/B_Environment/ThirdParty/PolyHaven/CheeseBox_01_1k.fbx`
-- `Assets/_Project/B_Environment/ThirdParty/PolyHaven/CheeseBox_01_1k.fbx/textures/CheeseBox_01_metallic_1k.exr`
-- `Assets/_Project/B_Environment/ThirdParty/PolyHaven/CheeseBox_01_1k.fbx/textures/CheeseBox_01_roughness_1k.jpg`
-- `Assets/_Project/B_Environment/ThirdParty/PolyHaven/metal_toolbox_1k.fbx`
-- `Assets/_Project/B_Environment/ThirdParty/PolyHaven/metal_toolbox_1k.fbx/textures/metal_toolbox_metal_1k.exr`
-- `Assets/_Project/B_Environment/ThirdParty/PolyHaven/metal_toolbox_1k.fbx/textures/metal_toolbox_rough_1k.exr`
-- `Assets/_Project/B_Environment/ThirdParty/PolyHaven/painted_wooden_stool_1k.fbx`
-- `Assets/_Project/B_Environment/ThirdParty/PolyHaven/painted_wooden_stool_1k.fbx/textures/painted_wooden_stool_rough_1k.exr`
-- `Assets/_Project/B_Environment/ThirdParty/PolyHaven/power_box_01_1k.fbx`
-- `Assets/_Project/B_Environment/ThirdParty/PolyHaven/power_box_01_1k.fbx/textures/power_box_01_metal_1k.exr`
-- `Assets/_Project/B_Environment/ThirdParty/PolyHaven/power_box_01_1k.fbx/textures/power_box_01_rough_1k.exr`
-- `Assets/AdventureForge/Geometry/Industrial Cabinets and Shelves/MetalCabinet01/MetalCabinetDDWalledFull04.fbx`
-- `Assets/AdventureForge/Texture/Industrial Cabinets and Shelves/MetalCabinet01/CleanRed/512/MetalCabientCornersupportMA_CleanRed_Albedo.tif`
-- `Assets/AdventureForge/Texture/Industrial Cabinets and Shelves/MetalCabinet01/CleanRed/512/MetalCabinetBodyMA_CleanRed_Albedo.tif`
-- `Assets/AdventureForge/Texture/Industrial Cabinets and Shelves/MetalCabinet01/CleanRed/512/MetalCabinetBodyMA_CleanRed_AO.tif`
-- `Assets/AdventureForge/Texture/Industrial Cabinets and Shelves/MetalCabinet01/CleanRed/512/MetalCabinetBodyMA_CleanRed_Emission.tif`
-- `Assets/AdventureForge/Texture/Industrial Cabinets and Shelves/MetalCabinet01/CleanRed/512/MetalCabinetBodyMA_CleanRed_MetallicSmoothness2.tif`
-- `Assets/AdventureForge/Texture/Industrial Cabinets and Shelves/MetalCabinet01/CleanRed/512/MetalCabinetBodyMA_CleanRed_Normal.tif`
-- `Assets/AdventureForge/Texture/Industrial Cabinets and Shelves/MetalCabinet01/CleanRed/512/MetalCabinetDoorsMA_CleanRed_Albedo.tif`
-- `Assets/AdventureForge/Texture/Industrial Cabinets and Shelves/MetalCabinet01/CleanRed/512/MetalCabinetDoorsMA_CleanRed_MetallicSmoothness2.tif`
-- `Assets/AdventureForge/Texture/Industrial Cabinets and Shelves/MetalCabinet01/CleanRed/512/MetalCabinetDoorsMA_CleanRed_Normal.tif`
-- `Assets/AdventureForge/Texture/Industrial Cabinets and Shelves/MetalCabinet01/CleanRed/512/MetalCabinetHandlesMA_CleanRed_Albedo.tif`
-- `Assets/AdventureForge/Texture/Industrial Cabinets and Shelves/MetalCabinet01/CleanRed/512/MetalCabinetHandlesMA_CleanRed_AO.tif`
-- `Assets/AdventureForge/Texture/Industrial Cabinets and Shelves/MetalCabinet01/CleanRed/512/MetalCabinetHandlesMA_CleanRed_MetallicSmoothness2.tif`
-- `Assets/AdventureForge/Texture/Industrial Cabinets and Shelves/MetalCabinet01/CleanRed/512/MetalCabinetHandlesMA_CleanRed_Normal.tif`
-- `Assets/AdventureForge/Texture/Industrial Cabinets and Shelves/MetalCabinet01/CleanRed/512/MetalCabinetSupportMA_CleanRed_Albedo.tif`
-- `Assets/AdventureForge/Texture/Industrial Cabinets and Shelves/MetalCabinet01/RustedRed/512/MatalCabinetShelfMA_RustedRed_Albedo.tif`
-- `Assets/AdventureForge/Texture/Industrial Cabinets and Shelves/MetalCabinet01/RustedRed/512/MatalCabinetShelfMA_RustedRed_AO.tif`
-- `Assets/AdventureForge/Texture/Industrial Cabinets and Shelves/MetalCabinet01/RustedRed/512/MatalCabinetShelfMA_RustedRed_MetallicSmoothness2.tif`
-- `Assets/AdventureForge/Texture/Industrial Cabinets and Shelves/MetalCabinet01/RustedRed/512/MatalCabinetShelfMA_RustedRed_Normal.tif`
-- `Assets/AdventureForge/Texture/Industrial Cabinets and Shelves/MetalCabinet01/RustedRed/512/MetalCabientCornersupportMA_RustedRed_Albedo.tif`
-- `Assets/AdventureForge/Texture/Industrial Cabinets and Shelves/MetalCabinet01/RustedRed/512/MetalCabientCornersupportMA_RustedRed_MetallicSmoothness2.tif`
-- `Assets/AdventureForge/Texture/Industrial Cabinets and Shelves/MetalCabinet01/RustedRed/512/MetalCabientCornersupportMA_RustedRed_Normal.tif`
-- `Assets/AdventureForge/Texture/Industrial Cabinets and Shelves/MetalCabinet01/RustedRed/512/MetalCabinetBodyMA_RustedRed_Albedo.tif`
-- `Assets/AdventureForge/Texture/Industrial Cabinets and Shelves/MetalCabinet01/RustedRed/512/MetalCabinetBodyMA_RustedRed_AO.tif`
-- `Assets/AdventureForge/Texture/Industrial Cabinets and Shelves/MetalCabinet01/RustedRed/512/MetalCabinetBodyMA_RustedRed_Emission.tif`
-- `Assets/AdventureForge/Texture/Industrial Cabinets and Shelves/MetalCabinet01/RustedRed/512/MetalCabinetBodyMA_RustedRed_MetallicSmoothness2.tif`
-- `Assets/AdventureForge/Texture/Industrial Cabinets and Shelves/MetalCabinet01/RustedRed/512/MetalCabinetBodyMA_RustedRed_Normal.tif`
-- `Assets/AdventureForge/Texture/Industrial Cabinets and Shelves/MetalCabinet01/RustedRed/512/MetalCabinetDoorsMA_RustedRed_Albedo.tif`
-- `Assets/AdventureForge/Texture/Industrial Cabinets and Shelves/MetalCabinet01/RustedRed/512/MetalCabinetDoorsMA_RustedRed_MetallicSmoothness2.tif`
-- `Assets/AdventureForge/Texture/Industrial Cabinets and Shelves/MetalCabinet01/RustedRed/512/MetalCabinetDoorsMA_RustedRed_Normal.tif`
-- `Assets/AdventureForge/Texture/Industrial Cabinets and Shelves/MetalCabinet01/RustedRed/512/MetalCabinetHandlesMA_RustedRed_Albedo.tif`
-- `Assets/AdventureForge/Texture/Industrial Cabinets and Shelves/MetalCabinet01/RustedRed/512/MetalCabinetHandlesMA_RustedRed_AO.tif`
-- `Assets/AdventureForge/Texture/Industrial Cabinets and Shelves/MetalCabinet01/RustedRed/512/MetalCabinetHandlesMA_RustedRed_MetallicSmoothness2.tif`
-- `Assets/AdventureForge/Texture/Industrial Cabinets and Shelves/MetalCabinet01/RustedRed/512/MetalCabinetHandlesMA_RustedRed_Normal.tif`
-- `Assets/AdventureForge/Texture/Industrial Cabinets and Shelves/MetalCabinet01/RustedRed/512/MetalCabinetSupportMA_RustedRed_Albedo.tif`
-- `Assets/AdventureForge/Texture/Industrial Cabinets and Shelves/MetalCabinet01/RustedRed/512/MetalCabinetSupportMA_RustedRed_MetallicSmoothness2.tif`
-- `Assets/AdventureForge/Texture/Industrial Cabinets and Shelves/MetalCabinet01/RustedRed/512/MetalCabinetSupportMA_RustedRed_Normal.tif`
-- `Assets/TutorialInfo/Icons/URP.png`
+- `Assets/_Project/C_Interactions/Models/Locker.obj` (Sketchfab download, not used in the final scene; can be deleted).
+- Unused Poly Haven texture maps (metal / roughness) inside the model folders, and the RustedRed variants in `Assets/AdventureForge/`. Not shipped, so no in-game credit is needed.
